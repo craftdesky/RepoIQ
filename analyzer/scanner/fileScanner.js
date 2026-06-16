@@ -5,15 +5,10 @@ const SUPPORTED_EXTENSIONS = new Set([".js", ".jsx", ".ts", ".tsx"]);
 const IGNORED_DIRS = new Set(["node_modules", ".git"]);
 
 function scanSourceFiles(repoPath) {
-    const root = path.resolve(repoPath);
+    const root = path.resolve(repoPath);   // convert to absolute path
 
     if (!fs.existsSync(root)) {
         throw new Error(`Repository path does not exist: ${root}`);
-    }
-
-    const stats = fs.statSync(root);
-    if (!stats.isDirectory()) {
-        throw new Error(`Repository path is not a directory: ${root}`);
     }
 
     const files = [];
@@ -56,7 +51,7 @@ module.exports = {
     scanSourceFiles
 };
 
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    console.log(JSON.stringify(scanSourceFiles(repoPath), null, 2));
-}
+
+// Printing for testing
+const repoPath = process.argv[2] || ".";
+console.log(JSON.stringify(scanSourceFiles(repoPath), null, 2));
