@@ -51,7 +51,8 @@ module.exports = {
     scanSourceFiles
 };
 
-
-// Printing for testing
-const repoPath = process.argv[2] || ".";
-console.log(JSON.stringify(scanSourceFiles(repoPath), null, 2));
+// printing for testing
+if (require.main === module) {
+    const repoPath = process.argv[2] || ".";
+    console.log(JSON.stringify(scanSourceFiles(repoPath), null, 2));
+}

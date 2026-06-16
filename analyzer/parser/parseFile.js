@@ -80,10 +80,15 @@ module.exports = {
     DEFAULT_PARSER_OPTIONS
 };
 
+// printing for testing
+if (require.main === module) {
+    const target = process.argv[2];
 
-// Printing for testing
-const target = process.argv[2];
+    if (!target) {
+        console.error("Usage: node analyzer/parser/parseFile.js <file-path>");
+        process.exit(1);
+    }
 
-const result = parseFile(target);
-console.log(JSON.stringify(result, null, 2));
-
+    const result = parseFile(target);
+    console.log(JSON.stringify(result, null, 2));
+}

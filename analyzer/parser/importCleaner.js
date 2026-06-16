@@ -113,13 +113,16 @@ module.exports = {
     resolveCandidate
 };
 
-// Printing for testing
-const baseFile = process.argv[2];
-const rawImports = process.argv.slice(3);
 
-if (!baseFile || rawImports.length === 0) {
-    console.error("Error");
-    process.exit(1);
+// printing for testing
+if (require.main === module) {
+    const baseFile = process.argv[2];
+    const rawImports = process.argv.slice(3);
+
+    if (!baseFile || rawImports.length === 0) {
+        console.error("Usage: node analyzer/parser/importCleaner.js <base-file> <import...>");
+        process.exit(1);
+    }
+
+    console.log(JSON.stringify(cleanImports(baseFile, rawImports), null, 2));
 }
-
-console.log(JSON.stringify(cleanImports(baseFile, rawImports), null, 2));
