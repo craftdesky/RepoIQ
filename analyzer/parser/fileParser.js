@@ -15,12 +15,13 @@ const DEFAULT_PARSER_OPTIONS = {
         "classPrivateProperties",
         "classPrivateMethods",
         "optionalChaining",
-        "nullishCoalescingOperator",
         "topLevelAwait"
     ]
 };
 
 function parseFile(filePath, options = {}) {
+    // given a file path, read code and return AST (or corresponding error)
+
     const resolvedPath = path.resolve(filePath);
     const parserOptions = {...DEFAULT_PARSER_OPTIONS, ...options};
 
@@ -45,9 +46,8 @@ function parseFile(filePath, options = {}) {
             filePath: resolvedPath,
             ast: null,
             error: {
-                message: `Failed to read file: ${resolvedPath}`,
+                message: error.message,
                 code: "FILE_READ_ERROR",
-                cause: error.message
             }
         };
     }

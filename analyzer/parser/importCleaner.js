@@ -7,9 +7,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const DEFAULT_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".json"];
+const DEFAULT_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx", ".json"];
 
 function isRelativeSpecifier(file) {
+    // does import point to relative file?
     return typeof file === "string" && (file.startsWith("./") || file.startsWith("../") || file.startsWith("/"));
 }
 
@@ -63,6 +64,8 @@ function cleanImports(baseFile, imports, options = {}) {
     const extensions = options.extensions || DEFAULT_EXTENSIONS;
     const absoluteBaseFile = path.resolve(baseFile);
     const baseDirectory = path.dirname(absoluteBaseFile);
+    const projectRoot = options.projectRoot || null;
+    const resolveNonRelative = !!options.resolveNonRelative;
     const list = Array.isArray(imports) ? imports : [imports];
 
     const cleaned = {
@@ -78,6 +81,27 @@ function cleanImports(baseFile, imports, options = {}) {
         if (!source) continue;
 
         if (!isRelativeSpecifier(source)) {
+            if (resolveNonRelative && projectRoot) {
+                const candidatePath = path.resolve(projectRoot, source);
+                const resolvedPath = resolveCandidate(candidatePath, extensions);
+
+                if (resolvedPath) {
+                    cleaned.resolved.push({
+                        source,
+                        kind: normalized.kind || "local",
+                        path: resolvedPath
+                    });
+                    continue;
+                }
+                else {
+                    cleaned.external.push({
+                        source,
+                        kind: normalized.kind || "external"
+                    });
+                    continue;
+                }
+            }
+
             cleaned.external.push({
                 source,
                 kind: normalized.kind || "external"
