@@ -82,10 +82,11 @@ module.exports = {
 
 // printing for testing
 if (require.main === module) {
+    // cmd : node analyzer/parser/fileParser.js <file-path>
     const target = process.argv[2];
 
     if (!target) {
-        console.error("Usage: node analyzer/parser/parseFile.js <file-path>");
+        console.error("Wrong input!");
         process.exit(1);
     }
 

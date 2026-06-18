@@ -2,7 +2,7 @@
 
 const path = require("path");
 const { scanSourceFiles } = require("../parser/fileScanner");
-const { parseFile } = require("../parser/parseFile");
+const { parseFile } = require("../parser/fileParser");
 const { extractImports } = require("../parser/importExtractor");
 const { cleanImports } = require("../parser/importCleaner");
 
