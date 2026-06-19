@@ -1,0 +1,113 @@
+{
+  "nodeCount": 6,
+  "edgeCount": 2,
+  "density": 0.0667,
+  "averageIncoming": 0.33,
+  "averageOutgoing": 0.33,
+  "isolatedCount": 4,
+  "entryNodeCount": 0,
+  "leafNodeCount": 0,
+  "filesByExtension": {
+    ".ts": 2,
+    ".jsx": 2,
+    ".js": 2
+  },
+  "isolatedNodes": [
+    "folder1/a.ts",
+    "folder1/b.ts",
+    "folder2/a.jsx",
+    "folder2/b.jsx"
+  ],
+  "entryNodes": [],
+  "leafNodes": [],
+  "mostConnectedModules": [
+    {
+      "id": "main.js",
+      "incoming": 1,
+      "outgoing": 1,
+      "totalConnections": 2
+    },
+    {
+      "id": "two.js",
+      "incoming": 1,
+      "outgoing": 1,
+      "totalConnections": 2
+    },
+    {
+      "id": "folder1/a.ts",
+      "incoming": 0,
+      "outgoing": 0,
+      "totalConnections": 0
+    },
+    {
+      "id": "folder1/b.ts",
+      "incoming": 0,
+      "outgoing": 0,
+      "totalConnections": 0
+    },
+    {
+      "id": "folder2/a.jsx",
+      "incoming": 0,
+      "outgoing": 0,
+      "totalConnections": 0
+    },
+    {
+      "id": "folder2/b.jsx",
+      "incoming": 0,
+      "outgoing": 0,
+      "totalConnections": 0
+    }
+  ],
+  "mostDependedOnModules": [
+    {
+      "id": "main.js",
+      "incoming": 1
+    },
+    {
+      "id": "two.js",
+      "incoming": 1
+    },
+    {
+      "id": "folder1/a.ts",
+      "incoming": 0
+    },
+    {
+      "id": "folder1/b.ts",
+      "incoming": 0
+    },
+    {
+      "id": "folder2/a.jsx",
+      "incoming": 0
+    },
+    {
+      "id": "folder2/b.jsx",
+      "incoming": 0
+    }
+  ],
+  "modulesWithMostDependencies": [
+    {
+      "id": "main.js",
+      "outgoing": 1
+    },
+    {
+      "id": "two.js",
+      "outgoing": 1
+    },
+    {
+      "id": "folder1/a.ts",
+      "outgoing": 0
+    },
+    {
+      "id": "folder1/b.ts",
+      "outgoing": 0
+    },
+    {
+      "id": "folder2/a.jsx",
+      "outgoing": 0
+    },
+    {
+      "id": "folder2/b.jsx",
+      "outgoing": 0
+    }
+  ]
+}

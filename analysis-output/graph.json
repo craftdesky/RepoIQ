@@ -1,0 +1,102 @@
+{
+  "nodes": [
+    {
+      "id": "folder1/a.ts",
+      "incoming": 0,
+      "outgoing": 0,
+      "dependencies": [],
+      "dependents": [],
+      "absolutePath": "D:/RepoIQ/testRepo/folder1/a.ts",
+      "extension": ".ts",
+      "sizeBytes": 0,
+      "lineCount": 0
+    },
+    {
+      "id": "folder1/b.ts",
+      "incoming": 0,
+      "outgoing": 0,
+      "dependencies": [],
+      "dependents": [],
+      "absolutePath": "D:/RepoIQ/testRepo/folder1/b.ts",
+      "extension": ".ts",
+      "sizeBytes": 0,
+      "lineCount": 0
+    },
+    {
+      "id": "folder2/a.jsx",
+      "incoming": 0,
+      "outgoing": 0,
+      "dependencies": [],
+      "dependents": [],
+      "absolutePath": "D:/RepoIQ/testRepo/folder2/a.jsx",
+      "extension": ".jsx",
+      "sizeBytes": 0,
+      "lineCount": 0
+    },
+    {
+      "id": "folder2/b.jsx",
+      "incoming": 0,
+      "outgoing": 0,
+      "dependencies": [],
+      "dependents": [],
+      "absolutePath": "D:/RepoIQ/testRepo/folder2/b.jsx",
+      "extension": ".jsx",
+      "sizeBytes": 0,
+      "lineCount": 0
+    },
+    {
+      "id": "main.js",
+      "incoming": 1,
+      "outgoing": 1,
+      "dependencies": [
+        "two.js"
+      ],
+      "dependents": [
+        "two.js"
+      ],
+      "absolutePath": "D:/RepoIQ/testRepo/main.js",
+      "extension": ".js",
+      "sizeBytes": 80,
+      "lineCount": 5
+    },
+    {
+      "id": "two.js",
+      "incoming": 1,
+      "outgoing": 1,
+      "dependencies": [
+        "main.js"
+      ],
+      "dependents": [
+        "main.js"
+      ],
+      "absolutePath": "D:/RepoIQ/testRepo/two.js",
+      "extension": ".js",
+      "sizeBytes": 80,
+      "lineCount": 5
+    }
+  ],
+  "edges": [
+    {
+      "from": "main.js",
+      "to": "two.js",
+      "source": "./two.js",
+      "kind": "static"
+    },
+    {
+      "from": "two.js",
+      "to": "main.js",
+      "source": "./main.js",
+      "kind": "static"
+    }
+  ],
+  "externalDependencies": [],
+  "unresolvedDependencies": [],
+  "parseErrors": [],
+  "stats": {
+    "nodeCount": 6,
+    "edgeCount": 2,
+    "externalDependencyCount": 0,
+    "unresolvedDependencyCount": 0,
+    "parseErrorCount": 0
+  }
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "path": [
+      "main.js",
+      "two.js",
+      "main.js"
+    ],
+    "affectedModules": [
+      "main.js",
+      "two.js"
+    ],
+    "length": 2,
+    "severity": "low"
+  }
+]
