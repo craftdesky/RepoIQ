@@ -16,6 +16,11 @@ function writeAnalysisReports(analysis, outputDir = "analysis-output") {
         graph: writeJsonReport(outputDir, "graph.json", analysis.graph),
         cycles: writeJsonReport(outputDir, "cycles.json", analysis.cycles),
         stats: writeJsonReport(outputDir, "stats.json", analysis.stats),
+        impact: writeJsonReport(outputDir, "impact.json", analysis.impact),
+        halstead: writeJsonReport(outputDir, "halstead.json", analysis.metrics.halstead),
+        cyclomaticComplexity: writeJsonReport(outputDir, "cyclomaticComplexity.json", analysis.metrics.cyclomaticComplexity),
+        cocomo: writeJsonReport(outputDir, "cocomo.json", analysis.metrics.cocomo),
+        commentDensity: writeJsonReport(outputDir, "commentDensity.json", analysis.metrics.commentDensity),
         summary: writeJsonReport(outputDir, "summary.json", {
             nodeCount: analysis.stats.nodeCount,
             edgeCount: analysis.stats.edgeCount,

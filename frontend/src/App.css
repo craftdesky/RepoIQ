@@ -1,0 +1,39 @@
+/* Minimalist layouts and transitions */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: #d1d5db;
+}
+
+.text-muted {
+  color: #6b7280;
+}
+
+.title {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+button {
+  transition: all 0.15s ease;
+}
+
+input[type="text"] {
+  transition: border-color 0.15s ease;
+}
