@@ -113,14 +113,52 @@ export default function DependencyGraph({ graphData, onSelectNode }) {
     };
   }, [graphData]);
 
+  const handleReset = () => {
+    if (cyRef.current) {
+      cyRef.current.animate({
+        fit: { padding: 30 },
+        duration: 300
+      });
+    }
+  };
+
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: "100%",
-        height: "100%",
-        backgroundColor: "transparent",
-      }}
-    />
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "transparent",
+        }}
+      />
+      <button
+        onClick={handleReset}
+        title="Reset Graph View"
+        style={{
+          position: "absolute",
+          bottom: "16px",
+          right: "16px",
+          backgroundColor: "#ffffff",
+          border: "1px solid #e5e7eb",
+          borderRadius: "6px",
+          padding: "8px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+          color: "#374151",
+          transition: "background-color 0.2s"
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f9fafb"}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "#ffffff"}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+      </button>
+    </div>
   );
 }

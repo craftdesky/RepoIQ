@@ -69,6 +69,7 @@ export default function App() {
   const cycles = currentAnalysis?.cycles;
   const impact = currentAnalysis?.impact;
   const selectedNodeImpact = selectedNode && impact?.[selectedNode];
+  const impactEntries = impact ? Object.entries(impact).map(([id, data]) => ({ id, ...data })) : [];
 
   const handleReturnToLanding = () => {
     setData(null);
@@ -166,21 +167,9 @@ export default function App() {
 
       <main className="dashboard-main">
         {/* Graph Section (Always Visible) */}
-        <section className="graph-section card">
-          <div className="graph-header">
-            <h3 className="section-title">Dependency Graph</h3>
-            <span className="text-muted" style={{ fontSize: "0.875rem" }}>
-              Click on a node to load its impact analysis.
-            </span>
-          </div>
-          <div className="graph-container">
-            <DependencyGraph 
-              graphData={currentAnalysis.graph} 
-              onSelectNode={(nodeId) => {
-                setSelectedNode(nodeId);
-                setActiveTab("impact");
-              }} 
-            />
+        <section className="graph-section card" style={{ padding: 0 }}>
+          <div className="graph-container" style={{ border: 'none', borderRadius: '6px' }}>
+            <DependencyGraph graphData={currentAnalysis.graph} />
           </div>
         </section>
 
@@ -363,53 +352,130 @@ export default function App() {
           {activeTab === "impact" && (
             <div className="card">
               <h3 className="title">Change Impact Analysis</h3>
-              {!selectedNode ? (
-                <p className="text-muted" style={{ fontSize: "0.875rem", padding: "2rem", textAlign: "center", backgroundColor: "#f9fafb", borderRadius: "6px" }}>
-                  Select a node from the Dependency Graph above to view its impact analysis.
-                </p>
-              ) : (
-                <div>
-                  <h4 style={{ fontSize: "1.125rem", margin: "0 0 1rem 0", color: "#2563eb", wordBreak: "break-all" }}>
-                    {selectedNode}
-                  </h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-                    <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
-                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>IMPACT SCOPE</span>
-                      <span style={{
-                        fontSize: "1.25rem",
-                        fontWeight: "600",
-                        color: selectedNodeImpact?.impactScope === "high" ? "#ef4444" : 
-                               selectedNodeImpact?.impactScope === "medium" ? "#eab308" : "#22c55e"
-                      }}>
-                        {selectedNodeImpact?.impactScope?.toUpperCase() || "UNKNOWN"}
-                      </span>
+              <div>
+                  <p className="text-muted" style={{ fontSize: "0.875rem", marginBottom: "1.5rem" }}>
+                    Identify high-risk modules and unused garbage nodes across your codebase.
+                  </p>
+                  
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
+                    {/* Highest Impact */}
+                    <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+                      <h4 style={{ margin: "0 0 1rem 0", color: "#991b1b", fontSize: "1rem" }}>Highest Impact Modules</h4>
+                      <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                        {impactEntries.sort((a, b) => b.affectedCount - a.affectedCount).slice(0, 5).map(node => (
+                          <li key={node.id} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f3f4f6" }}>
+                            <span style={{ wordBreak: "break-all", paddingRight: "1rem", color: "#374151", fontWeight: "500" }}>{node.id.split("/").pop()}</span>
+                            <strong style={{ whiteSpace: "nowrap", color: "#b91c1c" }}>{node.affectedCount} affected</strong>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
-                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>DIRECT DEPENDENTS</span>
-                      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{selectedNodeImpact?.directDependents?.length || 0}</span>
-                    </div>
-                    <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
-                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>TOTAL AFFECTED FILES</span>
-                      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{selectedNodeImpact?.affectedCount || 0}</span>
+
+                    {/* No Impact (Garbage) */}
+                    <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+                      <h4 style={{ margin: "0 0 1rem 0", color: "#166534", fontSize: "1rem" }}>Zero Impact (Potential Garbage)</h4>
+                      <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                        {impactEntries.filter(n => n.affectedCount === 0).slice(0, 5).map(node => (
+                          <li key={node.id} style={{ padding: "0.5rem 0", borderBottom: "1px solid #f3f4f6", wordBreak: "break-all", color: "#374151" }}>
+                            {node.id.split("/").pop()}
+                          </li>
+                        ))}
+                        {impactEntries.filter(n => n.affectedCount === 0).length === 0 && (
+                          <li style={{ padding: "0.5rem 0", color: "#6b7280" }}>No zero-impact files found.</li>
+                        )}
+                        {impactEntries.filter(n => n.affectedCount === 0).length > 5 && (
+                          <li style={{ padding: "0.5rem 0", color: "#6b7280" }}>...and {impactEntries.filter(n => n.affectedCount === 0).length - 5} more</li>
+                        )}
+                      </ul>
                     </div>
                   </div>
 
-                  {selectedNodeImpact?.affectedFiles?.length > 0 && (
-                    <div>
-                      <h5 style={{ margin: "0 0 0.75rem 0", fontSize: "0.875rem", color: "#374151" }}>Files affected by changes to this module:</h5>
-                      <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "0.5rem" }}>
-                        <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
-                          {selectedNodeImpact.affectedFiles.map((file, idx) => (
-                            <li key={idx} style={{ padding: "0.5rem", borderBottom: idx < selectedNodeImpact.affectedFiles.length - 1 ? "1px solid #f3f4f6" : "none", wordBreak: "break-all" }}>
-                              {file}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
+                  {/* All Nodes List */}
+                  <h4 style={{ margin: "0 0 1rem 0", fontSize: "1rem", color: "#37352F" }}>All Modules</h4>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
+                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#374151" }}>File Name</th>
+                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#374151" }}>Scope</th>
+                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#374151" }}>Direct Dependents</th>
+                          <th style={{ padding: "0.75rem", textAlign: "left", color: "#374151" }}>Total Affected</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {impactEntries.sort((a, b) => b.affectedCount - a.affectedCount).map(node => (
+                          <React.Fragment key={node.id}>
+                            <tr 
+                              onClick={() => setSelectedNode(selectedNode === node.id ? null : node.id)}
+                              style={{ 
+                                cursor: "pointer", 
+                                backgroundColor: selectedNode === node.id ? "#f9fafb" : "transparent",
+                                borderBottom: "1px solid #e5e7eb",
+                                transition: "background-color 0.2s"
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = selectedNode === node.id ? "#f9fafb" : "#f3f4f6"}
+                              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = selectedNode === node.id ? "#f9fafb" : "transparent"}
+                            >
+                              <td style={{ padding: "0.75rem", wordBreak: "break-all", fontWeight: "500", color: "#374151" }}>{node.id}</td>
+                              <td style={{ padding: "0.75rem" }}>
+                                <span className={`badge ${node.impactScope === 'high' ? 'badge-error' : node.impactScope === 'medium' ? 'badge-info' : ''}`} style={{ backgroundColor: node.impactScope === 'low' ? '#dcfce7' : undefined, color: node.impactScope === 'low' ? '#166534' : undefined }}>
+                                  {node.impactScope.toUpperCase()}
+                                </span>
+                              </td>
+                              <td style={{ padding: "0.75rem", color: "#374151" }}>{node.directDependents?.length || 0}</td>
+                              <td style={{ padding: "0.75rem", color: "#374151" }}>{node.affectedCount || 0}</td>
+                            </tr>
+                            {selectedNode === node.id && (
+                              <tr style={{ backgroundColor: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+                                <td colSpan={4} style={{ padding: "1.5rem" }}>
+                                  {/* Detailed View Inline */}
+                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+                                    <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+                                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>IMPACT SCOPE</span>
+                                      <span style={{
+                                        fontSize: "1.25rem",
+                                        fontWeight: "600",
+                                        color: node.impactScope === "high" ? "#ef4444" : 
+                                               node.impactScope === "medium" ? "#eab308" : "#22c55e"
+                                      }}>
+                                        {node.impactScope.toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+                                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>DIRECT DEPENDENTS</span>
+                                      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{node.directDependents?.length || 0}</span>
+                                    </div>
+                                    <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+                                      <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>TOTAL AFFECTED FILES</span>
+                                      <span style={{ fontSize: "1.25rem", fontWeight: "600" }}>{node.affectedCount || 0}</span>
+                                    </div>
+                                  </div>
+
+                                  {node.affectedFiles?.length > 0 ? (
+                                    <div>
+                                      <h5 style={{ margin: "0 0 0.75rem 0", fontSize: "0.875rem", color: "#37352F" }}>Files affected by changes to this module:</h5>
+                                      <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "0.5rem", backgroundColor: "#ffffff" }}>
+                                        <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                                          {node.affectedFiles.map((file, idx) => (
+                                            <li key={idx} style={{ padding: "0.5rem", borderBottom: idx < node.affectedFiles.length - 1 ? "1px solid #f3f4f6" : "none", wordBreak: "break-all" }}>
+                                              {file}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p style={{ margin: 0, fontSize: "0.875rem", color: "#6b7280" }}>No other files are affected by this module.</p>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              )}
             </div>
           )}
         </section>
