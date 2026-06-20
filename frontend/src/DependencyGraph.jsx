@@ -118,10 +118,8 @@ export default function DependencyGraph({ graphData, onSelectNode }) {
       ref={containerRef}
       style={{
         width: "100%",
-        height: "400px",
-        backgroundColor: "#ffffff",
-        border: "1px solid #e5e7eb",
-        borderRadius: "4px",
+        height: "100%",
+        backgroundColor: "transparent",
       }}
     />
   );
