@@ -7,9 +7,6 @@ const { analyzeRepo } = require("../analyzer/analyzeRepo");
 
 const router = express.Router();
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 const TEMP_DIR = path.join(__dirname, "temp-clones");
 
 const GITHUB_URL_REGEX =

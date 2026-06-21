@@ -23,6 +23,7 @@
   "homepage": "https://github.com/craftdesky/RepoIQ#readme",
   "dependencies": {
     "@babel/parser": "^7.29.7",
-    "@babel/traverse": "^7.29.7"
+    "@babel/traverse": "^7.29.7",
+    "dotenv": "^17.4.2"
   }
 }
