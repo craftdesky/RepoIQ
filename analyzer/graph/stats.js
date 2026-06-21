@@ -1,3 +1,4 @@
+const path = require("path");
 const { buildGraph } = require("./graphBuilder");
 const { getNodes, getEdges } = require("./graphUtils");
 
@@ -75,6 +76,20 @@ function calculateGraphStats(graph, options = {}) {
     const limit = options.limit || 10;
     const nodeCount = nodes.length;
     const edgeCount = edges.length;
+    // compute total folders and total lines
+    const folderSet = new Set();
+    let totalLines = 0;
+
+    for (const node of nodes) {
+        try {
+            const dir = path.posix.dirname(node.id || "");
+            folderSet.add(dir === "" ? "." : dir);
+        } catch (e) {
+            // ignore
+        }
+
+        totalLines += node.lineCount || 0;
+    }
     const isolatedNodes = getIsolatedNodes(nodes);
     const entryNodes = getEntryNodes(nodes);
     const leafNodes = getLeafNodes(nodes);
@@ -109,6 +124,9 @@ function calculateGraphStats(graph, options = {}) {
             }))
             .sort((a, b) => b.outgoing - a.outgoing || a.id.localeCompare(b.id))
             .slice(0, limit)
+        ,
+        totalFolders: folderSet.size,
+        totalLines: totalLines
     };
 }
 

@@ -6,6 +6,8 @@ const { calculateRepoHalstead } = require("./metrics/halstead");
 const { calculateRepoCyclomatic } = require("./metrics/cyclomaticComplexity");
 const { calculateRepoCocomo } = require("./metrics/cocomo");
 const { calculateRepoCommentDensity } = require("./metrics/commentDensity");
+const { calculateCouplingDensity } = require("./metrics/couplingDensity");
+const { calculateArchitecturalHealth } = require("./metrics/architecturalHealth");
 
 function buildImpactReport(graph) {
     const nodes = typeof graph.getNodes === "function"
@@ -36,6 +38,14 @@ function analyzeRepo(repoPath) {
     const cocomo = calculateRepoCocomo(repoPath);
     const commentDensity = calculateRepoCommentDensity(repoPath);
 
+    // --- Coupling & Architectural Health ---
+    const couplingDensity = calculateCouplingDensity(graph);
+    const architecturalHealth = calculateArchitecturalHealth({
+        numCycles: cycles.length,
+        couplingDensity: couplingDensity.density,
+        CCavg: cyclomaticComplexity.summary ? cyclomaticComplexity.summary.averageComplexity : 0
+    });
+
     return {
         graph: graphJson,
         cycles,
@@ -45,7 +55,9 @@ function analyzeRepo(repoPath) {
             halstead,
             cyclomaticComplexity,
             cocomo,
-            commentDensity
+            commentDensity,
+            couplingDensity,
+            architecturalHealth
         }
     };
 }

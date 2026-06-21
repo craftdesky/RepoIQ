@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import DependencyGraph from "./DependencyGraph";
 import "./App.css";
+import CocomoCard from "./components/CocomoCard";
+import HalsteadCard from "./components/HalsteadCard";
 
 export default function App() {
   const [sourceType, setSourceType] = useState("local"); // 'local' | 'git'
@@ -13,6 +15,13 @@ export default function App() {
   // Detail Drilldown / Selection states
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'metrics' | 'cycles' | 'impact'
+
+  function getCouplingLabel(density) {
+    const d = Number(density || 0);
+    if (d <= 0.35) return "Highly Modular";
+    if (d <= 0.65) return "Balanced";
+    return "Highly Monolithic";
+  }
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
@@ -210,15 +219,19 @@ export default function App() {
           {activeTab === "overview" && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
               <div className="card">
-                <h3 className="title">Project Structure</h3>
+                <h3 className="title">Repository Overview</h3>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
                   <div>
                     <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>TOTAL FILES</span>
                     <strong style={{ fontSize: "1.5rem" }}>{stats?.nodeCount || 0}</strong>
                   </div>
                   <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>DEPENDENCY LINKS</span>
-                    <strong style={{ fontSize: "1.5rem" }}>{stats?.edgeCount || 0}</strong>
+                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>TOTAL FOLDERS</span>
+                    <strong style={{ fontSize: "1.5rem" }}>{stats?.totalFolders || 0}</strong>
+                  </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>TOTAL LINES OF CODE</span>
+                    <strong style={{ fontSize: "1.25rem" }}>{stats?.totalLines || 0}</strong>
                   </div>
                   <div>
                     <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>ISOLATED FILES</span>
@@ -230,49 +243,22 @@ export default function App() {
                       {cycles?.length || 0}
                     </strong>
                   </div>
-                </div>
-              </div>
+                  <div>
+                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>DEPENDENCY LINKS</span>
+                    <strong style={{ fontSize: "1.5rem" }}>{stats?.edgeCount || 0}</strong>
+                  </div>
 
-              <div className="card">
-                <h3 className="title">COCOMO Estimates</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "1rem" }}>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>EFFORT ESTIMATE</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.cocomo?.summary?.effortPersonMonths || 0} PM</strong>
+                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem" }}>
+                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>COUPLING DENSITY</span>
+                    <strong style={{ fontSize: "1.25rem" }}>{(metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0).toFixed(2)}</strong>
+                    <div style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                      {getCouplingLabel(metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0)}
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>DEV TIME</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.cocomo?.summary?.developmentTimeMonths || 0} Mos</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>EST. TEAM SIZE</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.cocomo?.summary?.averageTeamSize || 0} Devs</strong>
-                  </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>KILOLINES OF CODE</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.cocomo?.summary?.kloc || 0} KLOC</strong>
-                  </div>
-                </div>
-              </div>
 
-              <div className="card" style={{ gridColumn: "1 / -1" }}>
-                <h3 className="title">Halstead Repository Summary</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>VOCABULARY</span>
-                    <span style={{ fontSize: "1.25rem", fontWeight: "500" }}>{metrics?.halstead?.summary?.vocabulary || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>VOLUME</span>
-                    <span style={{ fontSize: "1.25rem", fontWeight: "500" }}>{metrics?.halstead?.summary?.volume || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>DIFFICULTY</span>
-                    <span style={{ fontSize: "1.25rem", fontWeight: "500" }}>{metrics?.halstead?.summary?.difficulty || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>ESTIMATED DEFECTS</span>
-                    <span style={{ fontSize: "1.25rem", fontWeight: "500" }}>{metrics?.halstead?.summary?.defects || 0}</span>
+                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem" }}>
+                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>ARCHITECTURAL HEALTH SCORE</span>
+                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.architecturalHealth?.healthScore ?? metrics?.architecturalHealth?.score ?? 0}%</strong>
                   </div>
                 </div>
               </div>
@@ -281,42 +267,49 @@ export default function App() {
 
           {/* Tab: Metrics */}
           {activeTab === "metrics" && (
-            <div className="card">
-              <h3 className="title">Detailed Metrics Explorer</h3>
-              <p className="text-muted" style={{ fontSize: "0.875rem", marginBottom: "1rem" }}>
-                A comprehensive breakdown of cyclomatic complexity, lines of code, and Halstead difficulty per file.
-              </p>
-              <div style={{ overflowX: "auto" }}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>File Name</th>
-                      <th>Complexity (Highest Fn)</th>
-                      <th>Lines (LOC)</th>
-                      <th>Halstead Difficulty</th>
-                      <th>Comment Density</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentAnalysis.graph.nodes.map((node) => {
-                      const fileComplexity = metrics?.cyclomaticComplexity?.files?.find(f => f.file === node.id);
-                      const fileHalstead = metrics?.halstead?.files?.find(f => f.file === node.id);
-                      const fileComments = metrics?.commentDensity?.files?.find(f => f.file === node.id);
-
-                      return (
-                        <tr key={node.id}>
-                          <td style={{ wordBreak: "break-all", fontWeight: "500", color: "#2563eb" }}>{node.id}</td>
-                          <td>{fileComplexity?.metrics?.summary?.highestComplexity || 1}</td>
-                          <td>{node.lineCount || 0}</td>
-                          <td>{fileHalstead?.metrics?.difficulty || 0}</td>
-                          <td>{fileComments?.metrics?.commentDensity ? `${(fileComments.metrics.commentDensity * 100).toFixed(0)}%` : "0%"}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <CocomoCard summary={metrics?.cocomo?.summary} />
+                <HalsteadCard summary={metrics?.halstead?.summary} />
               </div>
-            </div>
+
+              <div className="card">
+                <h3 className="title">Detailed Metrics Explorer</h3>
+                <p className="text-muted" style={{ fontSize: "0.875rem", marginBottom: "1rem" }}>
+                  A comprehensive breakdown of cyclomatic complexity, lines of code, and Halstead difficulty per file.
+                </p>
+                <div style={{ overflowX: "auto" }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>File Name</th>
+                        <th>Complexity (Highest Fn)</th>
+                        <th>Lines (LOC)</th>
+                        <th>Halstead Difficulty</th>
+                        <th>Comment Density</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentAnalysis.graph.nodes.map((node) => {
+                        const fileComplexity = metrics?.cyclomaticComplexity?.files?.find(f => f.file === node.id);
+                        const fileHalstead = metrics?.halstead?.files?.find(f => f.file === node.id);
+                        const fileComments = metrics?.commentDensity?.files?.find(f => f.file === node.id);
+
+                        return (
+                          <tr key={node.id}>
+                            <td style={{ wordBreak: "break-all", fontWeight: "500", color: "#2563eb" }}>{node.id}</td>
+                            <td>{fileComplexity?.metrics?.summary?.highestComplexity || 1}</td>
+                            <td>{node.lineCount || 0}</td>
+                            <td>{fileHalstead?.metrics?.difficulty || 0}</td>
+                            <td>{fileComments?.metrics?.commentDensity ? `${(fileComments.metrics.commentDensity * 100).toFixed(0)}%` : "0%"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
 
           {/* Tab: Cycles */}
