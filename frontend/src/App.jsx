@@ -3,8 +3,11 @@ import DependencyGraph from "./DependencyGraph";
 import "./App.css";
 import CocomoCard from "./components/CocomoCard";
 import HalsteadCard from "./components/HalsteadCard";
+import CyclomaticCard from "./components/CyclomaticCard";
 import CouplingDensityGauge from "./components/CouplingDensityGauge";
 import HealthScoreChart from "./components/HealthScoreChart";
+import HotspotCard from "./components/HotspotCard";
+import HotspotTable from "./components/HotspotTable";
 
 export default function App() {
   const [sourceType, setSourceType] = useState("local"); // 'local' | 'git'
@@ -230,7 +233,12 @@ export default function App() {
         {/* Graph Section (Always Visible) */}
         <section className="graph-section card" style={{ padding: 0 }}>
           <div className="graph-container" style={{ border: 'none', borderRadius: '6px' }}>
-            <DependencyGraph graphData={currentAnalysis.graph} />
+            <DependencyGraph
+              graphData={currentAnalysis.graph}
+              hotspots={metrics?.hotspots?.files}
+              highlightNode={selectedNode}
+              onSelectNode={(id) => setSelectedNode(id)}
+            />
           </div>
         </section>
 
@@ -261,6 +269,12 @@ export default function App() {
           >
             Impact Analysis
             {selectedNode && <span className="badge badge-info">Active</span>}
+          </button>
+          <button
+            className={`feature-btn ${activeTab === 'hotspots' ? 'active' : ''}`}
+            onClick={() => setActiveTab('hotspots')}
+          >
+            Hotspot Analysis
           </button>
         </nav>
 
@@ -322,9 +336,10 @@ export default function App() {
           {/* Tab: Metrics */}
           {activeTab === "metrics" && (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
                 <CocomoCard summary={metrics?.cocomo?.summary} />
                 <HalsteadCard summary={metrics?.halstead?.summary} />
+                <CyclomaticCard summary={metrics?.cyclomaticComplexity?.summary} files={metrics?.cyclomaticComplexity?.files} />
               </div>
 
               <div className="card">
@@ -392,6 +407,16 @@ export default function App() {
                   <p style={{ margin: 0, fontSize: "0.875rem" }}>No circular dependencies detected in the project.</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Tab: Hotspots */}
+          {activeTab === "hotspots" && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+              <HotspotCard hotspots={metrics?.hotspots} />
+              <div style={{ gridColumn: "1 / -1" }}>
+                <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
+              </div>
             </div>
           )}
 

@@ -1,5 +1,7 @@
+import { probe } from "./hotspot.js";
 import {hola} from "./two.js"
 
 function sayhi(){
-    console.log('hello');
+    // use probe to create a reference
+    console.log('hello', probe());
 }

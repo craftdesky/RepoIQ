@@ -8,6 +8,7 @@ const { calculateRepoCocomo } = require("./metrics/cocomo");
 const { calculateRepoCommentDensity } = require("./metrics/commentDensity");
 const { calculateCouplingDensity } = require("./metrics/couplingDensity");
 const { calculateArchitecturalHealth } = require("./metrics/architecturalHealth");
+const { calculateHotspots } = require("./metrics/hotspots");
 
 function buildImpactReport(graph) {
     const nodes = typeof graph.getNodes === "function"
@@ -46,6 +47,13 @@ function analyzeRepo(repoPath) {
         CCavg: cyclomaticComplexity.summary ? cyclomaticComplexity.summary.averageComplexity : 0
     });
 
+    // --- Hotspots (Feature 7)
+    const hotspots = calculateHotspots(graph, {
+        impact,
+        cyclomaticComplexity,
+        cycles
+    });
+
     return {
         graph: graphJson,
         cycles,
@@ -57,7 +65,9 @@ function analyzeRepo(repoPath) {
             cocomo,
             commentDensity,
             couplingDensity,
-            architecturalHealth
+            architecturalHealth,
+            hotspots,
+            hotspotsByFolder: hotspots.folders
         }
     };
 }

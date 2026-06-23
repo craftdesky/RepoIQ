@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 
-export default function DependencyGraph({ graphData, onSelectNode }) {
+export default function DependencyGraph({ graphData, onSelectNode, hotspots, highlightNode }) {
   const containerRef = useRef(null);
   const cyRef = useRef(null);
 
@@ -109,9 +109,95 @@ export default function DependencyGraph({ graphData, onSelectNode }) {
     return () => {
       if (cyRef.current) {
         cyRef.current.destroy();
+        cyRef.current = null;
       }
     };
-  }, [graphData]);
+  }, [graphData, onSelectNode]);
+
+  // Apply hotspots styling and handle highlight changes
+  useEffect(() => {
+    if (!cyRef.current) return;
+
+    const cy = cyRef.current;
+
+    // Build a flexible hotspot lookup: full path, normalized, basename, and suffix matches
+    const hotspotMap = new Map();
+    if (Array.isArray(hotspots)) {
+      hotspots.forEach((h) => {
+        const rawId = (h && (h.id || h.file || "")) || "";
+        const norm = String(rawId).replaceAll("\\", "/");
+        const base = norm.split("/").pop();
+
+        hotspotMap.set(norm, h.hotspotScore);
+        hotspotMap.set(rawId, h.hotspotScore);
+        hotspotMap.set(base, h.hotspotScore);
+        if (norm.startsWith("./")) hotspotMap.set(norm.slice(2), h.hotspotScore);
+      });
+    }
+
+    cy.nodes().forEach((node) => {
+      const full = node.data("fullName") || node.id();
+      const id = String(full).replaceAll("\\", "/");
+      const base = id.split("/").pop();
+
+      let score = null;
+      if (hotspotMap.has(id)) score = hotspotMap.get(id);
+      else if (hotspotMap.has(node.id())) score = hotspotMap.get(node.id());
+      else if (hotspotMap.has(base)) score = hotspotMap.get(base);
+      else {
+        // suffix match (e.g., repo-root differences)
+        for (const [k, v] of hotspotMap.entries()) {
+          if (typeof k === "string" && k.length > 3 && id.endsWith(k)) {
+            score = v;
+            break;
+          }
+        }
+      }
+
+      let bg = "#ffffff";
+      let size = 30;
+
+      if (score !== null && score !== undefined) {
+        if (score >= 80) bg = "#ef4444"; // red
+        else if (score >= 60) bg = "#f97316"; // orange
+        else if (score >= 30) bg = "#facc15"; // yellow
+        else bg = "#10b981"; // green
+
+        size = 30 + Math.round((score / 100) * 24);
+      }
+
+      node.style({
+        "background-color": bg,
+        width: `${size}px`,
+        height: `${size}px`
+      });
+    });
+
+    // Handle node highlight/selection with flexible id matching
+    cy.nodes().unselect();
+    if (highlightNode) {
+      const hNorm = String(highlightNode).replaceAll("\\", "/");
+      let target = cy.getElementById(hNorm);
+      if (!target || target.length === 0) target = cy.getElementById(String(highlightNode));
+      if ((!target || target.length === 0) && hNorm.includes("/")) {
+        // try to find by fullName or basename
+        target = cy.nodes().filter((n) => {
+          const fn = String(n.data("fullName") || n.id()).replaceAll("\\", "/");
+          const bn = fn.split("/").pop();
+          return fn === hNorm || bn === hNorm || fn.endsWith(hNorm) || bn === hNorm.split("/").pop();
+        });
+      }
+
+      if (target && target.length > 0) {
+        target.select();
+        try {
+          cy.animate({ center: { eles: target }, duration: 300 });
+        } catch (e) {
+          // ignore animation errors
+        }
+      }
+    }
+  }, [hotspots, highlightNode]);
 
   const handleReset = () => {
     if (cyRef.current) {

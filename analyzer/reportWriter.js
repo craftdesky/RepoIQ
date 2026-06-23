@@ -21,6 +21,8 @@ function writeAnalysisReports(analysis, outputDir = "analysis-output") {
         cyclomaticComplexity: writeJsonReport(outputDir, "cyclomaticComplexity.json", analysis.metrics.cyclomaticComplexity),
         cocomo: writeJsonReport(outputDir, "cocomo.json", analysis.metrics.cocomo),
         commentDensity: writeJsonReport(outputDir, "commentDensity.json", analysis.metrics.commentDensity),
+        hotspots: writeJsonReport(outputDir, "hotspots.json", analysis.metrics.hotspots),
+        hotspotsByFolder: writeJsonReport(outputDir, "hotspotsByFolder.json", analysis.metrics.hotspotsByFolder),
         summary: writeJsonReport(outputDir, "summary.json", {
             nodeCount: analysis.stats.nodeCount,
             edgeCount: analysis.stats.edgeCount,
