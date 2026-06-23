@@ -3,6 +3,8 @@ import DependencyGraph from "./DependencyGraph";
 import "./App.css";
 import CocomoCard from "./components/CocomoCard";
 import HalsteadCard from "./components/HalsteadCard";
+import CouplingDensityGauge from "./components/CouplingDensityGauge";
+import HealthScoreChart from "./components/HealthScoreChart";
 
 export default function App() {
   const [sourceType, setSourceType] = useState("local"); // 'local' | 'git'
@@ -248,17 +250,19 @@ export default function App() {
                     <strong style={{ fontSize: "1.5rem" }}>{stats?.edgeCount || 0}</strong>
                   </div>
 
-                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem" }}>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>COUPLING DENSITY</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{(metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0).toFixed(2)}</strong>
-                    <div style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "0.25rem" }}>
-                      {getCouplingLabel(metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0)}
+                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", alignItems: "center" }}>
+                    <div>
+                      <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>COUPLING DENSITY</span>
+                      <CouplingDensityGauge density={metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0} />
+                      <div style={{ fontSize: "0.875rem", color: "#6b7280", marginTop: "0.25rem" }}>
+                        {getCouplingLabel(metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0)} · {((metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0) <= 1 ? ((metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0) * 100).toFixed(2) : (metrics?.couplingDensity?.density ?? metrics?.couplingDensity ?? 0).toFixed(2))}%
+                      </div>
                     </div>
-                  </div>
 
-                  <div style={{ gridColumn: "1 / -1", marginTop: "0.5rem" }}>
-                    <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>ARCHITECTURAL HEALTH SCORE</span>
-                    <strong style={{ fontSize: "1.25rem" }}>{metrics?.architecturalHealth?.healthScore ?? metrics?.architecturalHealth?.score ?? 0}%</strong>
+                    <div>
+                      <span className="text-muted" style={{ fontSize: "0.75rem", display: "block" }}>ARCHITECTURAL HEALTH SCORE</span>
+                      <HealthScoreChart score={metrics?.architecturalHealth?.healthScore ?? metrics?.architecturalHealth?.score ?? 0} />
+                    </div>
                   </div>
                 </div>
               </div>
