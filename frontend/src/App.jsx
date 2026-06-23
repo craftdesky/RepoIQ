@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import DependencyGraph from "./DependencyGraph";
 import "./App.css";
 import CocomoCard from "./components/CocomoCard";
@@ -81,6 +81,56 @@ export default function App() {
   const impact = currentAnalysis?.impact;
   const selectedNodeImpact = selectedNode && impact?.[selectedNode];
   const impactEntries = impact ? Object.entries(impact).map(([id, data]) => ({ id, ...data })) : [];
+
+  const [impactView, setImpactView] = useState("files"); // 'files' | 'folders'
+
+  function getDir(id) {
+    if (!id) return ".";
+    const parts = id.split("/");
+    parts.pop();
+    return parts.length === 0 ? "." : parts.join("/");
+  }
+
+  const aggregateImpactByFolder = (entries) => {
+    const map = {};
+    entries.forEach((node) => {
+      const dir = getDir(node.id);
+      if (!map[dir]) {
+        map[dir] = {
+          id: dir,
+          files: [],
+          affectedCount: 0,
+          directDependentsSet: new Set(),
+          affectedFilesSet: new Set(),
+          impactScope: "low",
+        };
+      }
+
+      const bucket = map[dir];
+      bucket.files.push(node);
+      bucket.affectedCount += node.affectedCount || 0;
+      (node.directDependents || []).forEach((d) => bucket.directDependentsSet.add(d));
+      (node.affectedFiles || []).forEach((f) => bucket.affectedFilesSet.add(f));
+
+      if (node.impactScope === "high") bucket.impactScope = "high";
+      else if (node.impactScope === "medium" && bucket.impactScope !== "high") bucket.impactScope = "medium";
+    });
+
+    return Object.values(map).map((b) => ({
+      id: b.id,
+      displayName: b.id.split("/").pop() || b.id,
+      files: b.files,
+      affectedCount: b.affectedCount,
+      directDependents: Array.from(b.directDependentsSet),
+      affectedFiles: Array.from(b.affectedFilesSet),
+      impactScope: b.impactScope,
+    }));
+  };
+
+  const displayedImpactEntries = useMemo(() => {
+    if (impactView === "files") return impactEntries;
+    return aggregateImpactByFolder(impactEntries);
+  }, [impactEntries, impactView]);
 
   const handleReturnToLanding = () => {
     setData(null);
@@ -350,18 +400,24 @@ export default function App() {
             <div className="card">
               <h3 className="title">Change Impact Analysis</h3>
               <div>
-                  <p className="text-muted" style={{ fontSize: "0.875rem", marginBottom: "1.5rem" }}>
-                    Identify high-risk modules and unused garbage nodes across your codebase.
-                  </p>
-                  
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                    <p className="text-muted" style={{ fontSize: "0.875rem", margin: 0 }}>
+                      Identify high-risk modules and unused garbage nodes across your codebase.
+                    </p>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button type="button" className={`toggle-btn ${impactView === 'files' ? 'active' : ''}`} onClick={() => setImpactView('files')}>Files</button>
+                      <button type="button" className={`toggle-btn ${impactView === 'folders' ? 'active' : ''}`} onClick={() => setImpactView('folders')}>Folders</button>
+                    </div>
+                  </div>
+
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
                     {/* Highest Impact */}
                     <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
                       <h4 style={{ margin: "0 0 1rem 0", color: "#991b1b", fontSize: "1rem" }}>Highest Impact Modules</h4>
                       <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
-                        {impactEntries.sort((a, b) => b.affectedCount - a.affectedCount).slice(0, 5).map(node => (
+                        {displayedImpactEntries.sort((a, b) => b.affectedCount - a.affectedCount).slice(0, 5).map(node => (
                           <li key={node.id} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f3f4f6" }}>
-                            <span style={{ wordBreak: "break-all", paddingRight: "1rem", color: "#374151", fontWeight: "500" }}>{node.id.split("/").pop()}</span>
+                            <span style={{ wordBreak: "break-all", paddingRight: "1rem", color: "#374151", fontWeight: "500" }}>{(impactView === 'files' ? node.id.split("/").pop() : (node.displayName || node.id.split("/").pop()))}</span>
                             <strong style={{ whiteSpace: "nowrap", color: "#b91c1c" }}>{node.affectedCount} affected</strong>
                           </li>
                         ))}
@@ -372,16 +428,16 @@ export default function App() {
                     <div style={{ padding: "1rem", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
                       <h4 style={{ margin: "0 0 1rem 0", color: "#166534", fontSize: "1rem" }}>Zero Impact (Potential Garbage)</h4>
                       <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
-                        {impactEntries.filter(n => n.affectedCount === 0).slice(0, 5).map(node => (
+                        {displayedImpactEntries.filter(n => n.affectedCount === 0).slice(0, 5).map(node => (
                           <li key={node.id} style={{ padding: "0.5rem 0", borderBottom: "1px solid #f3f4f6", wordBreak: "break-all", color: "#374151" }}>
-                            {node.id.split("/").pop()}
+                            {(impactView === 'files' ? node.id.split("/").pop() : (node.displayName || node.id.split("/").pop()))}
                           </li>
                         ))}
-                        {impactEntries.filter(n => n.affectedCount === 0).length === 0 && (
+                        {displayedImpactEntries.filter(n => n.affectedCount === 0).length === 0 && (
                           <li style={{ padding: "0.5rem 0", color: "#6b7280" }}>No zero-impact files found.</li>
                         )}
-                        {impactEntries.filter(n => n.affectedCount === 0).length > 5 && (
-                          <li style={{ padding: "0.5rem 0", color: "#6b7280" }}>...and {impactEntries.filter(n => n.affectedCount === 0).length - 5} more</li>
+                        {displayedImpactEntries.filter(n => n.affectedCount === 0).length > 5 && (
+                          <li style={{ padding: "0.5rem 0", color: "#6b7280" }}>...and {displayedImpactEntries.filter(n => n.affectedCount === 0).length - 5} more</li>
                         )}
                       </ul>
                     </div>
@@ -400,7 +456,7 @@ export default function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {impactEntries.sort((a, b) => b.affectedCount - a.affectedCount).map(node => (
+                        {displayedImpactEntries.sort((a, b) => b.affectedCount - a.affectedCount).map(node => (
                           <React.Fragment key={node.id}>
                             <tr 
                               onClick={() => setSelectedNode(selectedNode === node.id ? null : node.id)}
@@ -413,7 +469,7 @@ export default function App() {
                               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = selectedNode === node.id ? "#f9fafb" : "#f3f4f6"}
                               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = selectedNode === node.id ? "#f9fafb" : "transparent"}
                             >
-                              <td style={{ padding: "0.75rem", wordBreak: "break-all", fontWeight: "500", color: "#374151" }}>{node.id}</td>
+                              <td style={{ padding: "0.75rem", wordBreak: "break-all", fontWeight: "500", color: "#374151" }}>{impactView === 'files' ? node.id : (node.displayName || node.id)}</td>
                               <td style={{ padding: "0.75rem" }}>
                                 <span className={`badge ${node.impactScope === 'high' ? 'badge-error' : node.impactScope === 'medium' ? 'badge-info' : ''}`} style={{ backgroundColor: node.impactScope === 'low' ? '#dcfce7' : undefined, color: node.impactScope === 'low' ? '#166534' : undefined }}>
                                   {node.impactScope.toUpperCase()}
