@@ -9,6 +9,7 @@ import HealthScoreChart from "./components/HealthScoreChart";
 import HotspotCard from "./components/HotspotCard";
 import HotspotTable from "./components/HotspotTable";
 import HotspotSettings from "./components/HotspotSettings";
+import PathExplorer from "./components/PathExplorer";
 
 const defaultHotspotConfig = {
   weights: {
@@ -233,8 +234,8 @@ export default function App() {
               className="analyze-input"
               placeholder={
                 sourceType === "local"
-                  ? "Enter absolute folder path (e.g. d:/RepoIQ/testRepo)"
-                  : "Enter public repository URL (e.g. https://github.com/craftdesky/RepoIQ)"
+                  ? "Enter absolute folder path (e.g. d:/folder/repo)"
+                  : "Enter public repository URL (e.g. https://github.com/owner/repository)"
               }
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -252,9 +253,7 @@ export default function App() {
 
           <div className="hero-description">
             <p>
-              RepoIQ is a codebase intelligence platform that performs static analysis on repository structure, 
-              extracting module dependencies, tracking architectural cycles, and indexing complexity metrics 
-              to deliver a comprehensive representation of software architecture.
+              Codebase intelligence for modern developers. Analyze architecture, visualize dependencies, detect cycles, and understand complex repositories—all from a single platform.
             </p>
           </div>
         </div>
@@ -336,6 +335,12 @@ export default function App() {
             onClick={() => setActiveTab('hotspots')}
           >
             Hotspot Analysis
+          </button>
+          <button
+            className={`feature-btn ${activeTab === 'paths' ? 'active' : ''}`}
+            onClick={() => setActiveTab('paths')}
+          >
+            Path Explorer
           </button>
         </nav>
 
@@ -492,6 +497,15 @@ export default function App() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Tab: Paths */}
+          {activeTab === "paths" && (
+            <PathExplorer
+              graph={currentAnalysis.graph}
+              selectedNode={selectedNode}
+              onSelectNode={(id) => setSelectedNode(id)}
+            />
           )}
 
           {/* Tab: Impact */}

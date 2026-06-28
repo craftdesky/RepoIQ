@@ -129,4 +129,29 @@ router.post("/analyze/git", (req, res, next) => {
     }
 });
 
+// ---------------------------------------------------------------------------
+// POST /api/paths
+// ---------------------------------------------------------------------------
+router.post("/paths", (req, res, next) => {
+    try {
+        const { graph, startId, targetId } = req.body;
+
+        if (!graph || !startId || !targetId) {
+            return res.status(400).json({ error: "graph, startId, and targetId are required" });
+        }
+
+        const { findDependencyPaths } = require("../analyzer/graph/pathFinder");
+        
+        // Find paths with limits as requested (max 20 paths, max depth 20)
+        const result = findDependencyPaths(graph, startId, targetId, {
+            maxPaths: 20,
+            maxDepth: 20
+        });
+
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;
