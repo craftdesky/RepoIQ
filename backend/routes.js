@@ -45,7 +45,9 @@ router.post("/analyze/local", (req, res, next) => {
                 .json({ error: `Path does not exist or is not a directory: ${resolved}` });
         }
 
-        const result = analyzeRepo(resolved);
+        const result = analyzeRepo(resolved, {
+            hotspotConfig: req.body.hotspotConfig
+        });
 
         return res.json({
             source: "local",
@@ -90,7 +92,9 @@ router.post("/analyze/git", (req, res, next) => {
         console.log("[clone] Clone complete.");
 
         // Analyze
-        const result = analyzeRepo(cloneDir);
+        const result = analyzeRepo(cloneDir, {
+            hotspotConfig: req.body.hotspotConfig
+        });
 
         // Respond
         res.json({

@@ -23,7 +23,7 @@ function buildImpactReport(graph) {
     return impacts;
 }
 
-function analyzeRepo(repoPath) {
+function analyzeRepo(repoPath, options = {}) {
     // --- Graph & structural analysis ---
     const graph = buildGraph(repoPath);
     const graphJson = graph.toJSON();
@@ -48,10 +48,15 @@ function analyzeRepo(repoPath) {
     });
 
     // --- Hotspots (Feature 7)
+    const hotspotConfig = options.hotspotConfig || {};
     const hotspots = calculateHotspots(graph, {
         impact,
         cyclomaticComplexity,
         cycles
+    }, {
+        weights: hotspotConfig.weights,
+        thresholds: hotspotConfig.thresholds,
+        topN: hotspotConfig.topN
     });
 
     return {

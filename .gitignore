@@ -10,3 +10,5 @@ node_modules/
 # misc
 docs/
 .agents/
+snapshots/
+PENDING_TODOS.txt

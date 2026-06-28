@@ -16,11 +16,19 @@ function calculateHotspots(graph, extras = {}, options = {}) {
     const cyclomaticComplexity = extras.cyclomaticComplexity || {};
     const cycles = extras.cycles || [];
 
-    const weights = options.weights || {
+    const weights = {
         coupling: 0.35,
         impact: 0.35,
         complexity: 0.25,
-        cycle: 0.05
+        cycle: 0.05,
+        ...(options.weights || {})
+    };
+
+    const thresholds = {
+        high: 0.6,
+        critical: 0.8,
+        moderate: 0.3,
+        ...(options.thresholds || {})
     };
 
     const topN = Number.isInteger(options.topN) ? options.topN : 5;
@@ -169,14 +177,23 @@ function calculateHotspots(graph, extras = {}, options = {}) {
         };
 
         const reasonTags = [];
-        if (couplingScore >= 0.6) reasonTags.push("high-coupling");
-        if (impactScore >= 0.6) reasonTags.push("high-impact");
-        if (complexityScore >= 0.6) reasonTags.push("complex");
+        if (couplingScore >= thresholds.high) reasonTags.push("high-coupling");
+        if (impactScore >= thresholds.high) reasonTags.push("high-impact");
+        if (complexityScore >= thresholds.high) reasonTags.push("complex");
         if (cyclePenalty > 0) reasonTags.push("in-cycle");
+
+        const level = hotspotScore >= Math.round(thresholds.critical * 100)
+            ? "critical"
+            : hotspotScore >= Math.round(thresholds.high * 100)
+                ? "high"
+                : hotspotScore >= Math.round(thresholds.moderate * 100)
+                    ? "moderate"
+                    : "low";
 
         files.push({
             id,
             hotspotScore,
+            level,
             hotspotRaw: Number(hotspotRaw.toFixed(4)),
             components: {
                 couplingScore: Number(couplingScore.toFixed(4)),
@@ -221,11 +238,20 @@ function calculateHotspots(graph, extras = {}, options = {}) {
         const topContributors = entry.files.slice().sort((a, b) => b.hotspotScore - a.hotspotScore).slice(0, topN).map((x) => ({ id: x.id, hotspotScore: x.hotspotScore }));
         const folderReasonTags = Array.from(new Set(entry.files.slice(0, topN).flatMap((f) => f.reasonTags)));
 
+        const folderLevel = folderScore >= Math.round(thresholds.critical * 100)
+            ? "critical"
+            : folderScore >= Math.round(thresholds.high * 100)
+                ? "high"
+                : folderScore >= Math.round(thresholds.moderate * 100)
+                    ? "moderate"
+                    : "low";
+
         folders.push({
             id: dir,
             displayName: dir,
             hotspotScore: folderScore,
             hotspotRaw: Number(folderRaw.toFixed(4)),
+            level: folderLevel,
             files: entry.files.map((x) => ({ id: x.id, hotspotScore: x.hotspotScore })),
             topContributors,
             folderReasonTags
@@ -234,7 +260,15 @@ function calculateHotspots(graph, extras = {}, options = {}) {
 
     folders.sort((a, b) => b.hotspotScore - a.hotspotScore);
 
-    return { files, folders };
+    return {
+        files,
+        folders,
+        config: {
+            weights,
+            thresholds,
+            topN
+        }
+    };
 }
 
 module.exports = {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import DependencyGraph from "./DependencyGraph";
 import "./App.css";
 import CocomoCard from "./components/CocomoCard";
@@ -8,6 +8,22 @@ import CouplingDensityGauge from "./components/CouplingDensityGauge";
 import HealthScoreChart from "./components/HealthScoreChart";
 import HotspotCard from "./components/HotspotCard";
 import HotspotTable from "./components/HotspotTable";
+import HotspotSettings from "./components/HotspotSettings";
+
+const defaultHotspotConfig = {
+  weights: {
+    coupling: 0.35,
+    impact: 0.35,
+    complexity: 0.25,
+    cycle: 0.05,
+  },
+  thresholds: {
+    high: 0.6,
+    critical: 0.8,
+    moderate: 0.3,
+  },
+  topN: 5,
+};
 
 export default function App() {
   const [sourceType, setSourceType] = useState("local"); // 'local' | 'git'
@@ -16,10 +32,27 @@ export default function App() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [repoContext, setRepoContext] = useState({ name: "", link: "" });
+  const [hotspotConfig, setHotspotConfig] = useState(() => {
+    if (typeof window === "undefined") return defaultHotspotConfig;
+    try {
+      const saved = window.localStorage.getItem("repoiq.hotspotConfig");
+      if (!saved) return defaultHotspotConfig;
+      const parsed = JSON.parse(saved);
+      return {
+        ...defaultHotspotConfig,
+        ...parsed,
+        weights: { ...defaultHotspotConfig.weights, ...(parsed.weights || {}) },
+        thresholds: { ...defaultHotspotConfig.thresholds, ...(parsed.thresholds || {}) },
+      };
+    } catch {
+      return defaultHotspotConfig;
+    }
+  });
+  const hotspotConfigRef = useRef(hotspotConfig);
 
   // Detail Drilldown / Selection states
   const [selectedNode, setSelectedNode] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'metrics' | 'cycles' | 'impact'
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'metrics' | 'cycles' | 'impact' | 'hotspots'
 
   function getCouplingLabel(density) {
     const d = Number(density || 0);
@@ -28,8 +61,18 @@ export default function App() {
     return "Highly Monolithic";
   }
 
-  const handleAnalyze = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    hotspotConfigRef.current = hotspotConfig;
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("repoiq.hotspotConfig", JSON.stringify(hotspotConfig));
+    }
+  }, [hotspotConfig]);
+
+  const runAnalysis = async (event, options = {}) => {
+    if (event?.preventDefault) {
+      event.preventDefault();
+    }
+
     if (!inputValue.trim()) return;
 
     setLoading(true);
@@ -41,10 +84,11 @@ export default function App() {
         ? "http://localhost:5000/api/analyze/local"
         : "http://localhost:5000/api/analyze/git";
 
+    const activeHotspotConfig = hotspotConfigRef.current;
     const payload =
       sourceType === "local"
-        ? { repoPath: inputValue.trim() }
-        : { gitUrl: inputValue.trim() };
+        ? { repoPath: inputValue.trim(), hotspotConfig: activeHotspotConfig }
+        : { gitUrl: inputValue.trim(), hotspotConfig: activeHotspotConfig };
 
     try {
       const response = await fetch(endpoint, {
@@ -62,19 +106,36 @@ export default function App() {
       }
 
       setData(resData);
-      
+
       // Extract a name for the top ribbon
       let repoName = inputValue.trim().split(/[/\\]/).pop() || "Repository";
       if (sourceType === "git" && repoName.endsWith('.git')) {
         repoName = repoName.slice(0, -4);
       }
       setRepoContext({ name: repoName, link: inputValue.trim() });
-      setActiveTab("overview");
+      if (!options.keepCurrentTab) {
+        setActiveTab("overview");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAnalyze = (e) => runAnalysis(e);
+  const handleReanalyze = () => runAnalysis(null, { keepCurrentTab: true });
+  const handleHotspotConfigChange = (patch) => {
+    setHotspotConfig((prev) => {
+      const next = {
+        ...prev,
+        ...patch,
+        weights: { ...prev.weights, ...(patch.weights || {}) },
+        thresholds: { ...prev.thresholds, ...(patch.thresholds || {}) },
+      };
+      hotspotConfigRef.current = next;
+      return next;
+    });
   };
 
   const currentAnalysis = data?.analysis;
@@ -412,10 +473,23 @@ export default function App() {
 
           {/* Tab: Hotspots */}
           {activeTab === "hotspots" && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
-              <HotspotCard hotspots={metrics?.hotspots} />
-              <div style={{ gridColumn: "1 / -1" }}>
-                <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
+            <div style={{ display: "grid", gap: "1.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <div className="text-muted" style={{ fontSize: "0.95rem" }}>
+                  Configure hotspot weights and thresholds, then re-run analysis to refresh the scores.
+                </div>
+                <button type="button" className="analyze-btn" onClick={handleReanalyze} disabled={loading}>
+                  {loading ? "Re-running..." : "Re-run Analysis"}
+                </button>
+              </div>
+
+              <HotspotSettings config={hotspotConfig} onChange={handleHotspotConfigChange} />
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+                <HotspotCard hotspots={metrics?.hotspots} />
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
+                </div>
               </div>
             </div>
           )}
