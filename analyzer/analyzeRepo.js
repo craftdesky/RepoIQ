@@ -10,6 +10,7 @@ const { calculateCouplingDensity } = require("./metrics/couplingDensity");
 const { calculateArchitecturalHealth } = require("./metrics/architecturalHealth");
 const { calculateHotspots } = require("./metrics/hotspots");
 const { analyzeExternalDependencies } = require("./metrics/externalDependencyAnalyzer");
+const { aggregateFolderGraph } = require("./graph/folderAggregator");
 
 function buildImpactReport(graph) {
     const nodes = typeof graph.getNodes === "function"
@@ -63,11 +64,15 @@ function analyzeRepo(repoPath, options = {}) {
     // --- External Dependencies (Feature 14)
     const externalDependencies = analyzeExternalDependencies(repoPath, graphJson);
 
+    // --- Folder-Level Aggregation (Feature 9.3)
+    const folderGraph = aggregateFolderGraph(graphJson);
+
     return {
         graph: graphJson,
         cycles,
         stats,
         impact,
+        folderGraph,
         metrics: {
             halstead,
             cyclomaticComplexity,

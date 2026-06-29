@@ -12,6 +12,7 @@ import HotspotSettings from "./components/HotspotSettings";
 import PathExplorer from "./components/PathExplorer";
 import ChangelogRadius from "./components/ChangelogRadius";
 import ExternalDependencyAnalyzer from "./components/ExternalDependencyAnalyzer";
+import FolderGraphView from "./components/FolderGraphView";
 
 const defaultHotspotConfig = {
   weights: {
@@ -146,6 +147,7 @@ export default function App() {
   const stats = currentAnalysis?.stats;
   const cycles = currentAnalysis?.cycles;
   const impact = currentAnalysis?.impact;
+  const folderGraph = currentAnalysis?.folderGraph;
   const selectedNodeImpact = selectedNode && impact?.[selectedNode];
   const impactEntries = impact ? Object.entries(impact).map(([id, data]) => ({ id, ...data })) : [];
 
@@ -356,6 +358,12 @@ export default function App() {
           >
             External Dependencies
           </button>
+          <button
+            className={`feature-btn ${activeTab === 'folder-graph' ? 'active' : ''}`}
+            onClick={() => setActiveTab('folder-graph')}
+          >
+            Architecture (Folders)
+          </button>
         </nav>
 
         {/* Active Feature Content */}
@@ -530,6 +538,11 @@ export default function App() {
           {/* Tab: External Dependencies */}
           {activeTab === "external-deps" && (
             <ExternalDependencyAnalyzer externalDeps={metrics?.externalDependencies} />
+          )}
+
+          {/* Tab: Folder Architecture */}
+          {activeTab === "folder-graph" && (
+            <FolderGraphView folderGraph={folderGraph} />
           )}
 
           {/* Tab: Impact */}
