@@ -38,6 +38,7 @@ function analyzeImpact(graph, changedFileId, options = {}) {
 
     const reverseAdjacencyList = buildReverseAdjacencyList(graph);
     const affected = new Set();
+    const nodeDepths = new Map();
     const paths = [];
     const queue = (reverseAdjacencyList.get(fileId) || []).map((dependentId) => ({
         id: dependentId,
@@ -54,6 +55,11 @@ function analyzeImpact(graph, changedFileId, options = {}) {
 
         if (!affected.has(current.id)) {
             affected.add(current.id);
+            nodeDepths.set(current.id, currentDepth);
+        } else {
+            if (currentDepth < nodeDepths.get(current.id)) {
+                nodeDepths.set(current.id, currentDepth);
+            }
         }
 
         if (paths.length < maxPaths) {
@@ -76,6 +82,17 @@ function analyzeImpact(graph, changedFileId, options = {}) {
     }
 
     const affectedFiles = Array.from(affected);
+    
+    const tier1 = [];
+    const tier2 = [];
+    const tier3 = [];
+
+    for (const id of affectedFiles) {
+        const depth = nodeDepths.get(id);
+        if (depth <= 2) tier1.push(id);
+        else if (depth <= 4) tier2.push(id);
+        else tier3.push(id);
+    }
 
     return {
         file: fileId,
@@ -84,7 +101,12 @@ function analyzeImpact(graph, changedFileId, options = {}) {
         affectedFiles,
         affectedCount: affectedFiles.length,
         impactScope: getImpactScope(affectedFiles.length),
-        paths
+        paths,
+        blastRadius: {
+            tier1,
+            tier2,
+            tier3
+        }
     };
 }
 

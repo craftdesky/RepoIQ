@@ -9,6 +9,7 @@ const { calculateRepoCommentDensity } = require("./metrics/commentDensity");
 const { calculateCouplingDensity } = require("./metrics/couplingDensity");
 const { calculateArchitecturalHealth } = require("./metrics/architecturalHealth");
 const { calculateHotspots } = require("./metrics/hotspots");
+const { analyzeExternalDependencies } = require("./metrics/externalDependencyAnalyzer");
 
 function buildImpactReport(graph) {
     const nodes = typeof graph.getNodes === "function"
@@ -59,6 +60,9 @@ function analyzeRepo(repoPath, options = {}) {
         topN: hotspotConfig.topN
     });
 
+    // --- External Dependencies (Feature 14)
+    const externalDependencies = analyzeExternalDependencies(repoPath, graphJson);
+
     return {
         graph: graphJson,
         cycles,
@@ -72,7 +76,8 @@ function analyzeRepo(repoPath, options = {}) {
             couplingDensity,
             architecturalHealth,
             hotspots,
-            hotspotsByFolder: hotspots.folders
+            hotspotsByFolder: hotspots.folders,
+            externalDependencies
         }
     };
 }

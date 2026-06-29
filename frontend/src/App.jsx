@@ -10,6 +10,8 @@ import HotspotCard from "./components/HotspotCard";
 import HotspotTable from "./components/HotspotTable";
 import HotspotSettings from "./components/HotspotSettings";
 import PathExplorer from "./components/PathExplorer";
+import ChangelogRadius from "./components/ChangelogRadius";
+import ExternalDependencyAnalyzer from "./components/ExternalDependencyAnalyzer";
 
 const defaultHotspotConfig = {
   weights: {
@@ -342,6 +344,18 @@ export default function App() {
           >
             Path Explorer
           </button>
+          <button
+            className={`feature-btn ${activeTab === 'changelog' ? 'active' : ''}`}
+            onClick={() => setActiveTab('changelog')}
+          >
+            Changelog Radius
+          </button>
+          <button
+            className={`feature-btn ${activeTab === 'external-deps' ? 'active' : ''}`}
+            onClick={() => setActiveTab('external-deps')}
+          >
+            External Dependencies
+          </button>
         </nav>
 
         {/* Active Feature Content */}
@@ -508,6 +522,16 @@ export default function App() {
             />
           )}
 
+          {/* Tab: Changelog Radius */}
+          {activeTab === "changelog" && (
+            <ChangelogRadius impactResults={impactEntries} />
+          )}
+
+          {/* Tab: External Dependencies */}
+          {activeTab === "external-deps" && (
+            <ExternalDependencyAnalyzer externalDeps={metrics?.externalDependencies} />
+          )}
+
           {/* Tab: Impact */}
           {activeTab === "impact" && (
             <div className="card">
@@ -617,7 +641,52 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  {node.affectedFiles?.length > 0 ? (
+                                  {node.blastRadius ? (
+                                    <div>
+                                      <h5 style={{ margin: "0 0 0.75rem 0", fontSize: "0.875rem", color: "#37352F" }}>Blast Radius (Propagation Distance):</h5>
+                                      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                                        {node.blastRadius.tier1?.length > 0 && (
+                                          <div style={{ border: "1px solid #fecaca", borderRadius: "6px", backgroundColor: "#fff5f5" }}>
+                                            <div style={{ padding: "0.5rem 0.75rem", backgroundColor: "#fee2e2", borderBottom: "1px solid #fecaca", borderTopLeftRadius: "5px", borderTopRightRadius: "5px", fontWeight: "600", fontSize: "0.875rem", color: "#991b1b" }}>
+                                              Tier 1: Direct Dependents (1-2 imports away)
+                                            </div>
+                                            <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                                              {node.blastRadius.tier1.map((file, idx) => (
+                                                <li key={idx} style={{ padding: "0.5rem 0.75rem", borderBottom: idx < node.blastRadius.tier1.length - 1 ? "1px solid #fecaca" : "none", wordBreak: "break-all", color: "#7f1d1d" }}>{file}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {node.blastRadius.tier2?.length > 0 && (
+                                          <div style={{ border: "1px solid #fed7aa", borderRadius: "6px", backgroundColor: "#fff7ed" }}>
+                                            <div style={{ padding: "0.5rem 0.75rem", backgroundColor: "#ffedd5", borderBottom: "1px solid #fed7aa", borderTopLeftRadius: "5px", borderTopRightRadius: "5px", fontWeight: "600", fontSize: "0.875rem", color: "#9a3412" }}>
+                                              Tier 2: Indirect Dependents (3-4 imports away)
+                                            </div>
+                                            <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                                              {node.blastRadius.tier2.map((file, idx) => (
+                                                <li key={idx} style={{ padding: "0.5rem 0.75rem", borderBottom: idx < node.blastRadius.tier2.length - 1 ? "1px solid #fed7aa" : "none", wordBreak: "break-all", color: "#7c2d12" }}>{file}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {node.blastRadius.tier3?.length > 0 && (
+                                          <div style={{ border: "1px solid #fef08a", borderRadius: "6px", backgroundColor: "#fefce8" }}>
+                                            <div style={{ padding: "0.5rem 0.75rem", backgroundColor: "#fef9c3", borderBottom: "1px solid #fef08a", borderTopLeftRadius: "5px", borderTopRightRadius: "5px", fontWeight: "600", fontSize: "0.875rem", color: "#854d0e" }}>
+                                              Tier 3: Deep Transitive (4+ imports away)
+                                            </div>
+                                            <ul style={{ listStyleType: "none", padding: 0, margin: 0, fontSize: "0.875rem" }}>
+                                              {node.blastRadius.tier3.map((file, idx) => (
+                                                <li key={idx} style={{ padding: "0.5rem 0.75rem", borderBottom: idx < node.blastRadius.tier3.length - 1 ? "1px solid #fef08a" : "none", wordBreak: "break-all", color: "#713f12" }}>{file}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        )}
+                                        {(!node.blastRadius.tier1?.length && !node.blastRadius.tier2?.length && !node.blastRadius.tier3?.length) && (
+                                          <p style={{ margin: 0, fontSize: "0.875rem", color: "#6b7280" }}>No other files are affected by this module.</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : node.affectedFiles?.length > 0 ? (
                                     <div>
                                       <h5 style={{ margin: "0 0 0.75rem 0", fontSize: "0.875rem", color: "#37352F" }}>Files affected by changes to this module:</h5>
                                       <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "0.5rem", backgroundColor: "#ffffff" }}>
