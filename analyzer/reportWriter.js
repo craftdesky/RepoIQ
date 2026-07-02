@@ -23,6 +23,8 @@ function writeAnalysisReports(analysis, outputDir = "analysis-output") {
         commentDensity: writeJsonReport(outputDir, "commentDensity.json", analysis.metrics.commentDensity),
         hotspots: writeJsonReport(outputDir, "hotspots.json", analysis.metrics.hotspots),
         hotspotsByFolder: writeJsonReport(outputDir, "hotspotsByFolder.json", analysis.metrics.hotspotsByFolder),
+        connectors: writeJsonReport(outputDir, "criticalConnectors.json", analysis.metrics.connectors),
+        connectorsByFolder: writeJsonReport(outputDir, "criticalConnectorsByFolder.json", analysis.metrics.connectorsByFolder),
         summary: writeJsonReport(outputDir, "summary.json", {
             nodeCount: analysis.stats.nodeCount,
             edgeCount: analysis.stats.edgeCount,

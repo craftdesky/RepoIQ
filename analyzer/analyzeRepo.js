@@ -9,6 +9,7 @@ const { calculateRepoCommentDensity } = require("./metrics/commentDensity");
 const { calculateCouplingDensity } = require("./metrics/couplingDensity");
 const { calculateArchitecturalHealth } = require("./metrics/architecturalHealth");
 const { calculateHotspots } = require("./metrics/hotspots");
+const { calculateConnectors } = require("./graph/connectors");
 const { analyzeExternalDependencies } = require("./metrics/externalDependencyAnalyzer");
 const { aggregateFolderGraph } = require("./graph/folderAggregator");
 
@@ -61,6 +62,9 @@ function analyzeRepo(repoPath, options = {}) {
         topN: hotspotConfig.topN
     });
 
+    // --- Critical connectors (articulation points, bridges, centrality)
+    const connectors = calculateConnectors(graph);
+
     // --- External Dependencies (Feature 14)
     const externalDependencies = analyzeExternalDependencies(repoPath, graphJson);
 
@@ -82,6 +86,8 @@ function analyzeRepo(repoPath, options = {}) {
             architecturalHealth,
             hotspots,
             hotspotsByFolder: hotspots.folders,
+            connectors,
+            connectorsByFolder: null,
             externalDependencies
         }
     };

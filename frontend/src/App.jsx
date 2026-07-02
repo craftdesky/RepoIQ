@@ -9,6 +9,8 @@ import HealthScoreChart from "./components/HealthScoreChart";
 import HotspotCard from "./components/HotspotCard";
 import HotspotTable from "./components/HotspotTable";
 import HotspotSettings from "./components/HotspotSettings";
+import CriticalConnectorsCard from "./components/CriticalConnectorsCard";
+import CriticalConnectorsTable from "./components/CriticalConnectorsTable";
 import PathExplorer from "./components/PathExplorer";
 import ChangelogRadius from "./components/ChangelogRadius";
 import ExternalDependencyAnalyzer from "./components/ExternalDependencyAnalyzer";
@@ -299,7 +301,8 @@ export default function App() {
           <div className="graph-container" style={{ border: 'none', borderRadius: '6px' }}>
             <DependencyGraph
               graphData={currentAnalysis.graph}
-              hotspots={metrics?.hotspots?.files}
+                  hotspots={metrics?.hotspots?.files}
+                  connectors={metrics?.connectors}
               highlightNode={selectedNode}
               onSelectNode={(id) => setSelectedNode(id)}
             />
@@ -339,6 +342,13 @@ export default function App() {
             onClick={() => setActiveTab('hotspots')}
           >
             Hotspot Analysis
+          </button>
+          <button
+            className={`feature-btn ${activeTab === 'connectors' ? 'active' : ''}`}
+            onClick={() => setActiveTab('connectors')}
+          >
+            Critical Connectors
+            {metrics?.connectors?.summary && <span className="badge badge-info">{metrics.connectors.summary.articulationCount || 0}</span>}
           </button>
           <button
             className={`feature-btn ${activeTab === 'paths' ? 'active' : ''}`}
@@ -516,6 +526,24 @@ export default function App() {
                 <HotspotCard hotspots={metrics?.hotspots} />
                 <div style={{ gridColumn: "1 / -1" }}>
                   <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Connectors */}
+          {activeTab === "connectors" && (
+            <div style={{ display: "grid", gap: "1.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <div className="text-muted" style={{ fontSize: "0.95rem" }}>
+                  Critical connectors highlight articulation points and bridges that split the graph.
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+                <CriticalConnectorsCard connectors={metrics?.connectors} />
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <CriticalConnectorsTable connectors={metrics?.connectors} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
                 </div>
               </div>
             </div>

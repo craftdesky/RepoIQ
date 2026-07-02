@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import cytoscape from "cytoscape";
 
-export default function DependencyGraph({ graphData, onSelectNode, hotspots, highlightNode }) {
+export default function DependencyGraph({ graphData, onSelectNode, hotspots, highlightNode, connectors }) {
   const containerRef = useRef(null);
   const cyRef = useRef(null);
 
@@ -114,7 +114,7 @@ export default function DependencyGraph({ graphData, onSelectNode, hotspots, hig
     };
   }, [graphData, onSelectNode]);
 
-  // Apply hotspots styling and handle highlight changes
+  // Apply hotspots and connectors styling and handle highlight changes
   useEffect(() => {
     if (!cyRef.current) return;
 
@@ -156,6 +156,31 @@ export default function DependencyGraph({ graphData, onSelectNode, hotspots, hig
 
       let bg = "#ffffff";
       let size = 30;
+      let borderColor = "#374151";
+      let borderWidth = 1.5;
+
+      // connector visuals
+      if (connectors) {
+        const apIds = new Set((connectors.articulationPoints || []).map((a) => String(a.id).replaceAll("\\", "/")));
+        const bt = new Map((connectors.betweenness || []).map((b) => [String(b.id).replaceAll("\\", "/"), b.score]));
+        const deg = new Map((connectors.degree || []).map((d) => [String(d.id).replaceAll("\\", "/"), d.degree]));
+
+        if (apIds.has(id) || apIds.has(base)) {
+          borderColor = "#ef4444";
+          borderWidth = 3;
+        }
+
+        const bscore = bt.get(id) || bt.get(base) || 0;
+        if (bscore > 0) {
+          // make size reflect centrality
+          size = Math.max(size, 30 + Math.round(Math.min(bscore, 50) / 50 * 36));
+        }
+
+        const dscore = deg.get(id) || deg.get(base) || 0;
+        if (dscore > 8) {
+          borderWidth = Math.max(borderWidth, 2 + Math.min(dscore - 8, 6));
+        }
+      }
 
       if (score !== null && score !== undefined) {
         if (score >= 80) bg = "#ef4444"; // red
@@ -169,7 +194,9 @@ export default function DependencyGraph({ graphData, onSelectNode, hotspots, hig
       node.style({
         "background-color": bg,
         width: `${size}px`,
-        height: `${size}px`
+        height: `${size}px`,
+        "border-color": borderColor,
+        "border-width": borderWidth
       });
     });
 
