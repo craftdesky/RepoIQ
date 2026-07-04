@@ -63,6 +63,7 @@ export default function App() {
   // Detail Drilldown / Selection states
   const [selectedNode, setSelectedNode] = useState(null);
   const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'metrics' | 'cycles' | 'impact' | 'hotspots'
+  const [qualitySubTab, setQualitySubTab] = useState("maintainability");
 
   function getCouplingLabel(density) {
     const d = Number(density || 0);
@@ -586,14 +587,45 @@ export default function App() {
           {/* Tab: Quality & Debt Dashboard */}
           {activeTab === "quality" && (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+                {[
+                  { key: "maintainability", label: "Maintainability" },
+                  { key: "codeQuality", label: "Code Quality" },
+                  { key: "technicalDebt", label: "Technical Debt" },
+                  { key: "benchmarking", label: "Benchmarking" }
+                ].map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setQualitySubTab(tab.key)}
+                    style={{
+                      padding: "0.5rem 1.25rem",
+                      borderRadius: "6px",
+                      border: qualitySubTab === tab.key ? "1px solid #2563eb" : "1px solid #d1d5db",
+                      backgroundColor: qualitySubTab === tab.key ? "#eff6ff" : "#fff",
+                      color: qualitySubTab === tab.key ? "#2563eb" : "#374151",
+                      fontSize: "0.875rem",
+                      fontWeight: qualitySubTab === tab.key ? "600" : "400",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease"
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {qualitySubTab === "maintainability" && (
                 <MaintainabilityCard maintainability={metrics?.maintainability} />
+              )}
+              {qualitySubTab === "codeQuality" && (
                 <CodeQualityCard codeQuality={metrics?.codeQuality} />
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+              )}
+              {qualitySubTab === "technicalDebt" && (
                 <TechnicalDebtReport technicalDebt={metrics?.technicalDebt} />
+              )}
+              {qualitySubTab === "benchmarking" && (
                 <BenchmarkingReport benchmarking={metrics?.benchmarking} />
-              </div>
+              )}
             </div>
           )}
 
