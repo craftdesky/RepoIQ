@@ -12,6 +12,10 @@ const { calculateHotspots } = require("./metrics/hotspots");
 const { calculateConnectors } = require("./graph/connectors");
 const { analyzeExternalDependencies } = require("./metrics/externalDependencyAnalyzer");
 const { aggregateFolderGraph } = require("./graph/folderAggregator");
+const { calculateRepoMaintainability } = require("./metrics/maintainability");
+const { calculateCodeQualityScore } = require("./metrics/codeQuality");
+const { calculateTechnicalDebt } = require("./metrics/technicalDebt");
+const { calculateBenchmarkReport } = require("./metrics/benchmarking");
 
 function buildImpactReport(graph) {
     const nodes = typeof graph.getNodes === "function"
@@ -71,6 +75,30 @@ function analyzeRepo(repoPath, options = {}) {
     // --- Folder-Level Aggregation (Feature 9.3)
     const folderGraph = aggregateFolderGraph(graphJson);
 
+    // --- Advanced Metrics (Phase 3) ---
+    // Build metrics object for new calculators
+    const metricsForCalculation = {
+        halstead,
+        cyclomaticComplexity,
+        cocomo,
+        commentDensity,
+        couplingDensity,
+        architecturalHealth
+    };
+
+    // Maintainability Index (Feature 13.3)
+    const maintainability = calculateRepoMaintainability(repoPath, metricsForCalculation, graphJson);
+    metricsForCalculation.maintainability = maintainability;
+
+    // Code Quality Score (Feature 13.5)
+    const codeQuality = calculateCodeQualityScore(metricsForCalculation, graphJson, cycles);
+
+    // Technical Debt Indicators (Feature 13.6)
+    const technicalDebt = calculateTechnicalDebt(metricsForCalculation, graphJson, cycles);
+
+    // Repository Benchmarking (Feature 13.7)
+    const benchmarking = calculateBenchmarkReport(metricsForCalculation, graphJson, cycles);
+
     return {
         graph: graphJson,
         cycles,
@@ -88,7 +116,12 @@ function analyzeRepo(repoPath, options = {}) {
             hotspotsByFolder: hotspots.folders,
             connectors,
             connectorsByFolder: null,
-            externalDependencies
+            externalDependencies,
+            // Phase 3 Advanced Metrics
+            maintainability,
+            codeQuality,
+            technicalDebt,
+            benchmarking
         }
     };
 }
