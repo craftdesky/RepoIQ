@@ -1,7 +1,7 @@
 /**
  * Maintainability Index Calculator
  * 
- * Uses Microsoft's Maintainability Index formula to calculate a score (0-100)
+ * Refer Microsoft's Maintainability Index formula to calculate a score (0-100)
  * representing the long-term maintainability of code.
  * 
  * Formula:
