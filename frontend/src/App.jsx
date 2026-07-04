@@ -15,6 +15,10 @@ import PathExplorer from "./components/PathExplorer";
 import ChangelogRadius from "./components/ChangelogRadius";
 import ExternalDependencyAnalyzer from "./components/ExternalDependencyAnalyzer";
 import FolderGraphView from "./components/FolderGraphView";
+import MaintainabilityCard from "./components/MaintainabilityCard";
+import CodeQualityCard from "./components/CodeQualityCard";
+import TechnicalDebtReport from "./components/TechnicalDebtReport";
+import BenchmarkingReport from "./components/BenchmarkingReport";
 
 const defaultHotspotConfig = {
   weights: {
@@ -374,6 +378,12 @@ export default function App() {
           >
             Architecture (Folders)
           </button>
+          <button
+            className={`feature-btn ${activeTab === 'quality' ? 'active' : ''}`}
+            onClick={() => setActiveTab('quality')}
+          >
+            Quality &amp; Debt
+          </button>
         </nav>
 
         {/* Active Feature Content */}
@@ -571,6 +581,20 @@ export default function App() {
           {/* Tab: Folder Architecture */}
           {activeTab === "folder-graph" && (
             <FolderGraphView folderGraph={folderGraph} />
+          )}
+
+          {/* Tab: Quality & Debt Dashboard */}
+          {activeTab === "quality" && (
+            <div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+                <MaintainabilityCard maintainability={metrics?.maintainability} />
+                <CodeQualityCard codeQuality={metrics?.codeQuality} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+                <TechnicalDebtReport technicalDebt={metrics?.technicalDebt} />
+                <BenchmarkingReport benchmarking={metrics?.benchmarking} />
+              </div>
+            </div>
           )}
 
           {/* Tab: Impact */}
