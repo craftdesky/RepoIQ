@@ -120,83 +120,13 @@ export default function DependencyGraph({ graphData, onSelectNode, hotspots, hig
 
     const cy = cyRef.current;
 
-    // Build a flexible hotspot lookup: full path, normalized, basename, and suffix matches
-    const hotspotMap = new Map();
-    if (Array.isArray(hotspots)) {
-      hotspots.forEach((h) => {
-        const rawId = (h && (h.id || h.file || "")) || "";
-        const norm = String(rawId).replaceAll("\\", "/");
-        const base = norm.split("/").pop();
-
-        hotspotMap.set(norm, h.hotspotScore);
-        hotspotMap.set(rawId, h.hotspotScore);
-        hotspotMap.set(base, h.hotspotScore);
-        if (norm.startsWith("./")) hotspotMap.set(norm.slice(2), h.hotspotScore);
-      });
-    }
-
     cy.nodes().forEach((node) => {
-      const full = node.data("fullName") || node.id();
-      const id = String(full).replaceAll("\\", "/");
-      const base = id.split("/").pop();
-
-      let score = null;
-      if (hotspotMap.has(id)) score = hotspotMap.get(id);
-      else if (hotspotMap.has(node.id())) score = hotspotMap.get(node.id());
-      else if (hotspotMap.has(base)) score = hotspotMap.get(base);
-      else {
-        // suffix match (e.g., repo-root differences)
-        for (const [k, v] of hotspotMap.entries()) {
-          if (typeof k === "string" && k.length > 3 && id.endsWith(k)) {
-            score = v;
-            break;
-          }
-        }
-      }
-
-      let bg = "#ffffff";
-      let size = 30;
-      let borderColor = "#374151";
-      let borderWidth = 1.5;
-
-      // connector visuals
-      if (connectors) {
-        const apIds = new Set((connectors.articulationPoints || []).map((a) => String(a.id).replaceAll("\\", "/")));
-        const bt = new Map((connectors.betweenness || []).map((b) => [String(b.id).replaceAll("\\", "/"), b.score]));
-        const deg = new Map((connectors.degree || []).map((d) => [String(d.id).replaceAll("\\", "/"), d.degree]));
-
-        if (apIds.has(id) || apIds.has(base)) {
-          borderColor = "#ef4444";
-          borderWidth = 3;
-        }
-
-        const bscore = bt.get(id) || bt.get(base) || 0;
-        if (bscore > 0) {
-          // make size reflect centrality
-          size = Math.max(size, 30 + Math.round(Math.min(bscore, 50) / 50 * 36));
-        }
-
-        const dscore = deg.get(id) || deg.get(base) || 0;
-        if (dscore > 8) {
-          borderWidth = Math.max(borderWidth, 2 + Math.min(dscore - 8, 6));
-        }
-      }
-
-      if (score !== null && score !== undefined) {
-        if (score >= 80) bg = "#ef4444"; // red
-        else if (score >= 60) bg = "#f97316"; // orange
-        else if (score >= 30) bg = "#facc15"; // yellow
-        else bg = "#10b981"; // green
-
-        size = 30 + Math.round((score / 100) * 24);
-      }
-
       node.style({
-        "background-color": bg,
-        width: `${size}px`,
-        height: `${size}px`,
-        "border-color": borderColor,
-        "border-width": borderWidth
+        "background-color": "#ffffff",
+        width: "30px",
+        height: "30px",
+        "border-color": "#374151",
+        "border-width": 1.5
       });
     });
 
