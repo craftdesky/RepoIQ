@@ -300,96 +300,107 @@ export default function App() {
         </div>
       </header>
 
-      <main className="dashboard-main">
-        {/* Graph Section (Always Visible) */}
-        <section className="graph-section card" style={{ padding: 0 }}>
-          <div className="graph-container" style={{ border: 'none', borderRadius: '6px' }}>
-            <DependencyGraph
-              graphData={currentAnalysis.graph}
-                  hotspots={metrics?.hotspots?.files}
-                  connectors={metrics?.connectors}
-              highlightNode={selectedNode}
-              onSelectNode={(id) => setSelectedNode(id)}
-            />
-          </div>
-        </section>
-
-        {/* Feature Buttons Block */}
-        <nav className="feature-nav">
+      <div className="dashboard-body">
+        {/* Left Sidebar */}
+        <aside className="sidebar">
+          <div className="sidebar-label">Visualize</div>
           <button
-            className={`feature-btn ${activeTab === 'overview' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'graph' ? 'active' : ''}`}
+            onClick={() => setActiveTab('graph')}
+          >
+            Dependency Graph
+          </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'folder-graph' ? 'active' : ''}`}
+            onClick={() => setActiveTab('folder-graph')}
+          >
+            Architecture (Folders)
+          </button>
+
+          <div className="sidebar-label">Analysis</div>
+          <button
+            className={`sidebar-btn ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
           >
             Repository Overview
           </button>
           <button
-            className={`feature-btn ${activeTab === 'metrics' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'metrics' ? 'active' : ''}`}
             onClick={() => setActiveTab('metrics')}
           >
             Metrics Explorer
           </button>
           <button
-            className={`feature-btn ${activeTab === 'cycles' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'cycles' ? 'active' : ''}`}
             onClick={() => setActiveTab('cycles')}
           >
             Circular Dependencies
             {cycles && cycles.length > 0 && <span className="badge badge-error">{cycles.length}</span>}
           </button>
           <button
-            className={`feature-btn ${activeTab === 'impact' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'impact' ? 'active' : ''}`}
             onClick={() => setActiveTab('impact')}
           >
             Impact Analysis
             {selectedNode && <span className="badge badge-info">Active</span>}
           </button>
           <button
-            className={`feature-btn ${activeTab === 'hotspots' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'hotspots' ? 'active' : ''}`}
             onClick={() => setActiveTab('hotspots')}
           >
             Hotspot Analysis
           </button>
           <button
-            className={`feature-btn ${activeTab === 'connectors' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'connectors' ? 'active' : ''}`}
             onClick={() => setActiveTab('connectors')}
           >
             Critical Connectors
             {metrics?.connectors?.summary && <span className="badge badge-info">{metrics.connectors.summary.articulationCount || 0}</span>}
           </button>
+
+          <div className="sidebar-label">Tools</div>
           <button
-            className={`feature-btn ${activeTab === 'paths' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'paths' ? 'active' : ''}`}
             onClick={() => setActiveTab('paths')}
           >
             Path Explorer
           </button>
           <button
-            className={`feature-btn ${activeTab === 'changelog' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'changelog' ? 'active' : ''}`}
             onClick={() => setActiveTab('changelog')}
           >
             Changelog Radius
           </button>
           <button
-            className={`feature-btn ${activeTab === 'external-deps' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'external-deps' ? 'active' : ''}`}
             onClick={() => setActiveTab('external-deps')}
           >
             External Dependencies
           </button>
           <button
-            className={`feature-btn ${activeTab === 'folder-graph' ? 'active' : ''}`}
-            onClick={() => setActiveTab('folder-graph')}
-          >
-            Architecture (Folders)
-          </button>
-          <button
-            className={`feature-btn ${activeTab === 'quality' ? 'active' : ''}`}
+            className={`sidebar-btn ${activeTab === 'quality' ? 'active' : ''}`}
             onClick={() => setActiveTab('quality')}
           >
             Quality &amp; Debt
           </button>
-        </nav>
+        </aside>
 
-        {/* Active Feature Content */}
-        <section className="feature-content">
-          
+        {/* Right Content Area */}
+        <main className="content-area">
+
+          {/* Tab: Dependency Graph */}
+          {activeTab === "graph" && (
+            <div className="graph-full-view">
+              <DependencyGraph
+                graphData={currentAnalysis.graph}
+                hotspots={metrics?.hotspots?.files}
+                connectors={metrics?.connectors}
+                highlightNode={selectedNode}
+                onSelectNode={(id) => setSelectedNode(id)}
+              />
+            </div>
+          )}
+
           {/* Tab: Overview */}
           {activeTab === "overview" && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
@@ -810,8 +821,8 @@ export default function App() {
                 </div>
             </div>
           )}
-        </section>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
