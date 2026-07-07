@@ -10,14 +10,13 @@ function getAiClient() {
         return null;
     }
     if (!aiInstance) {
-        aiInstance = new GoogleGenAI();
+        aiInstance = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     }
     return aiInstance;
 }
 
 /**
  * Check if the AI service is properly configured with an API key.
- * @returns {boolean}
  */
 function isAiConfigured() {
     return Boolean(getAiClient());
@@ -25,10 +24,6 @@ function isAiConfigured() {
 
 /**
  * Generate plain text response using Gemini model.
- * @param {string|Array} contents - Prompt text or array of content parts
- * @param {string} [systemInstruction] - Optional system instruction
- * @param {Object} [options] - Optional config override (e.g. temperature, maxOutputTokens)
- * @returns {Promise<string>}
  */
 async function generateText(contents, systemInstruction = null, options = {}) {
     const client = getAiClient();
@@ -62,11 +57,6 @@ async function generateText(contents, systemInstruction = null, options = {}) {
 
 /**
  * Generate structured JSON response using Gemini model.
- * @param {string|Array} contents - Prompt text or array of content parts
- * @param {string} [systemInstruction] - Optional system instruction
- * @param {Object} [responseSchema] - Optional JSON schema for structured output
- * @param {Object} [options] - Optional config override
- * @returns {Promise<Object>}
  */
 async function generateJSON(contents, systemInstruction = null, responseSchema = null, options = {}) {
     const client = getAiClient();

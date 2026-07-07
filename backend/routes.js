@@ -165,4 +165,72 @@ router.get("/ai/status", (_req, res) => {
     });
 });
 
+// ---------------------------------------------------------------------------
+// POST /api/ai/summary
+// ---------------------------------------------------------------------------
+router.post("/ai/summary", async (req, res, next) => {
+    try {
+        const { isAiConfigured, generateText } = require("./services/aiService");
+
+        if (!isAiConfigured()) {
+            return res.status(503).json({
+                error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
+            });
+        }
+
+        const { projectMetadata, stats, metrics } = req.body;
+
+        if (!projectMetadata && !stats) {
+            return res.status(400).json({ error: "projectMetadata or stats are required." });
+        }
+
+        // Build structured context for the LLM
+        const contextParts = [];
+
+        if (projectMetadata?.readme) {
+            contextParts.push(`## README.md\n${projectMetadata.readme}`);
+        }
+
+        if (projectMetadata?.packageJson) {
+            const pkg = projectMetadata.packageJson;
+            contextParts.push(`## package.json Summary\n- Name: ${pkg.name || "N/A"}\n- Description: ${pkg.description || "N/A"}\n- Version: ${pkg.version || "N/A"}\n- Dependencies: ${(pkg.dependencies || []).join(", ") || "None"}\n- Dev Dependencies: ${(pkg.devDependencies || []).join(", ") || "None"}\n- Scripts: ${(pkg.scripts || []).join(", ") || "None"}`);
+        }
+
+        if (stats) {
+            contextParts.push(`## Repository Statistics\n- Total Files: ${stats.totalNodes || "N/A"}\n- Total Dependencies: ${stats.totalEdges || "N/A"}\n- Average Dependencies per File: ${stats.avgDegree || "N/A"}`);
+        }
+
+        if (metrics?.codeQuality?.summary) {
+            const cq = metrics.codeQuality.summary;
+            contextParts.push(`## Code Quality\n- Overall Score: ${cq.overallQualityScore}/100 (${cq.rating}, Grade ${cq.grade})`);
+        }
+
+        if (metrics?.architecturalHealth) {
+            const ah = metrics.architecturalHealth;
+            contextParts.push(`## Architectural Health\n- Health Score: ${ah.score}/100 (${ah.label})`);
+        }
+
+        if (metrics?.benchmarking?.assessments) {
+            const a = metrics.benchmarking.assessments;
+            contextParts.push(`## Engineering Maturity\n- Complexity: ${a.complexity}\n- Maintainability: ${a.maintainability}\n- Maturity Level: ${a.maturity?.level || "N/A"} (${a.maturity?.status || "N/A"})`);
+        }
+
+        const contextBlock = contextParts.join("\n\n");
+
+        const systemInstruction = `You are a senior software architect writing a professional, concise summary of a code repository. Your summary should be written in clean Markdown and cover: 1) Project Purpose, 2) Tech Stack & Dependencies, 3) Architecture & Module Structure, 4) Code Health Assessment, 5) Key Observations. Be specific and actionable. Do not include generic filler. Use bullet points and short paragraphs. Keep the total response under 600 words.`;
+
+        const prompt = `Analyze the following repository metadata and metrics, then generate a professional repository summary.\n\n${contextBlock}`;
+
+        const summary = await generateText(prompt, systemInstruction, {
+            temperature: 0.3,
+            maxOutputTokens: 2048
+        });
+
+        res.json({ summary });
+    }
+    catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

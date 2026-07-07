@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const { buildGraph } = require("./graph/graphBuilder");
 const { detectCycles } = require("./graph/cycleDetector");
 const { calculateGraphStats } = require("./graph/stats");
@@ -30,7 +32,52 @@ function buildImpactReport(graph) {
     return impacts;
 }
 
+/**
+ * Extract key project metadata files for AI context.
+ */
+function extractProjectMetadata(repoPath) {
+    const metadata = {};
+
+    // Read README
+    const readmeNames = ["README.md", "readme.md", "README.markdown", "README.txt", "README"];
+    for (const name of readmeNames) {
+        const readmePath = path.join(repoPath, name);
+        if (fs.existsSync(readmePath)) {
+            try {
+                const content = fs.readFileSync(readmePath, "utf-8");
+                metadata.readme = content.slice(0, 8000); // cap at 8k chars
+                metadata.readmeFile = name;
+            }
+            catch (error) { /* ignore read errors */ }
+            break;
+        }
+    }
+
+    // Read package.json
+    const pkgPath = path.join(repoPath, "package.json");
+    if (fs.existsSync(pkgPath)) {
+        try {
+            const raw = fs.readFileSync(pkgPath, "utf-8");
+            const pkg = JSON.parse(raw);
+            metadata.packageJson = {
+                name: pkg.name,
+                description: pkg.description,
+                version: pkg.version,
+                dependencies: pkg.dependencies ? Object.keys(pkg.dependencies) : [],
+                devDependencies: pkg.devDependencies ? Object.keys(pkg.devDependencies) : [],
+                scripts: pkg.scripts ? Object.keys(pkg.scripts) : []
+            };
+        } 
+        catch (error) { /* ignore parse errors */ }
+    }
+
+    return metadata;
+}
+
 function analyzeRepo(repoPath, options = {}) {
+    // --- Project metadata for AI features ---
+    const projectMetadata = extractProjectMetadata(repoPath);
+
     // --- Graph & structural analysis ---
     const graph = buildGraph(repoPath);
     const graphJson = graph.toJSON();
@@ -105,6 +152,7 @@ function analyzeRepo(repoPath, options = {}) {
         stats,
         impact,
         folderGraph,
+        projectMetadata,
         metrics: {
             halstead,
             cyclomaticComplexity,

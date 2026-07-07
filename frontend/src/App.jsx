@@ -19,6 +19,7 @@ import MaintainabilityCard from "./components/MaintainabilityCard";
 import CodeQualityCard from "./components/CodeQualityCard";
 import TechnicalDebtReport from "./components/TechnicalDebtReport";
 import BenchmarkingReport from "./components/BenchmarkingReport";
+import RepositorySummary from "./components/RepositorySummary";
 
 const defaultHotspotConfig = {
   weights: {
@@ -155,6 +156,7 @@ export default function App() {
   const cycles = currentAnalysis?.cycles;
   const impact = currentAnalysis?.impact;
   const folderGraph = currentAnalysis?.folderGraph;
+  const projectMetadata = currentAnalysis?.projectMetadata;
   const selectedNodeImpact = selectedNode && impact?.[selectedNode];
   const impactEntries = impact ? Object.entries(impact).map(([id, data]) => ({ id, ...data })) : [];
 
@@ -382,6 +384,14 @@ export default function App() {
             onClick={() => setActiveTab('quality')}
           >
             Quality &amp; Debt
+          </button>
+
+          <div className="sidebar-label">AI</div>
+          <button
+            className={`sidebar-btn ${activeTab === 'ai-summary' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai-summary')}
+          >
+            Repository Summary
           </button>
         </aside>
 
@@ -638,6 +648,15 @@ export default function App() {
                 <BenchmarkingReport benchmarking={metrics?.benchmarking} />
               )}
             </div>
+          )}
+
+          {/* Tab: AI Repository Summary */}
+          {activeTab === "ai-summary" && (
+            <RepositorySummary
+              projectMetadata={projectMetadata}
+              stats={stats}
+              metrics={metrics}
+            />
           )}
 
           {/* Tab: Impact */}
