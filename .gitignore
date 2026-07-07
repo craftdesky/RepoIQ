@@ -3,6 +3,7 @@
 
 # environment variables
 .env
+.env.example
 
 # dependencies
 node_modules/

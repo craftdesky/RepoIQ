@@ -154,4 +154,15 @@ router.post("/paths", (req, res, next) => {
     }
 });
 
+// ---------------------------------------------------------------------------
+// GET /api/ai/status
+// ---------------------------------------------------------------------------
+router.get("/ai/status", (_req, res) => {
+    const { isAiConfigured } = require("./services/aiService");
+    res.json({
+        configured: isAiConfigured(),
+        model: process.env.GEMINI_MODEL || "gemini-2.5-flash"
+    });
+});
+
 module.exports = router;
