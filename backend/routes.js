@@ -233,4 +233,88 @@ router.post("/ai/summary", async (req, res, next) => {
     }
 });
 
+// ---------------------------------------------------------------------------
+// POST /api/ai/onboarding
+// ---------------------------------------------------------------------------
+router.post("/ai/onboarding", async (req, res, next) => {
+    try {
+        const { isAiConfigured, generateText } = require("./services/aiService");
+
+        if (!isAiConfigured()) {
+            return res.status(503).json({
+                error: "Gemini API key not found."
+            });
+        }
+
+        const { experience, goal, techFocus, projectMetadata, stats, metrics } = req.body;
+
+        if (!experience || !goal || !techFocus) {
+            return res.status(400).json({ error: "experience, goal, and techFocus are required." });
+        }
+
+        // Build context sections
+        const readme = projectMetadata?.readme
+            ? projectMetadata.readme.slice(0, 4000)
+            : "No README available.";
+
+        const pkg = projectMetadata?.packageJson;
+        const dependencies = pkg
+            ? `${(pkg.dependencies || []).join(", ") || "None"}`
+            : "Not available";
+
+        const totalNodes = stats?.totalNodes ?? "N/A";
+        const totalEdges = stats?.totalEdges ?? "N/A";
+
+        const codeQualityScore = metrics?.codeQuality?.summary?.overallQualityScore ?? "N/A";
+        const grade = metrics?.codeQuality?.summary?.grade ?? "N/A";
+        const healthScore = metrics?.architecturalHealth?.score ?? "N/A";
+        const healthLabel = metrics?.architecturalHealth?.label ?? "N/A";
+
+        const topHotspots = (metrics?.hotspots?.files || [])
+            .slice(0, 5)
+            .map(h => `${h.file || h.id} (score: ${h.hotspotScore ?? "?"})`)
+            .join(", ") || "None identified";
+
+        const systemInstruction = `You are an expert Technical Lead onboarding a new developer to this codebase. Your goal is to write a highly tailored, clear, and actionable markdown onboarding guide. Be direct, technical, and use bullet points. Do not include generic filler.`;
+
+        const prompt = `Generate a structured, personalized learning path for me based on my developer profile:
+- Experience Level: ${experience}
+- Onboarding Goal: ${goal}
+- Primary Tech Focus: ${techFocus}
+
+Use the following repository context, stats, and static analysis metrics to tailor your guide:
+
+## README.md Context
+${readme}
+
+## Project Dependencies
+${dependencies}
+
+## Codebase Stats
+- Total Files: ${totalNodes}
+- Total Dependencies: ${totalEdges}
+
+## Code Health & Architectural Metrics
+- Overall Code Quality: ${codeQualityScore}/100 (Grade ${grade})
+- Architectural Health: ${healthScore}/100 (${healthLabel})
+- Hotspot Files (High complexity/debt/coupling): ${topHotspots}
+
+Please structure the markdown guide into these exact sections:
+1. **Recommended Entry Points**: Suggest the 3 most important files/folders to read first, and justify why based on my Tech Focus and Goal.
+2. **Personalized Reading Flow**: A step-by-step reading roadmap tailored to my Goal.
+3. **Guardrails & Health Alerts**: Alert me to the top 2-3 hotspots or highly coupled areas to be careful of when making changes.
+4. **Suggested Hands-on Starter Task**: A practical, low-risk task (e.g., adding a test, tracing a route, adding a log) to help me run my first code modification.`;
+
+        const guide = await generateText(prompt, systemInstruction, {
+            temperature: 0.4,
+            maxOutputTokens: 2048
+        });
+
+        res.json({ guide });
+    }
+    catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

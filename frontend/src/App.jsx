@@ -20,6 +20,7 @@ import CodeQualityCard from "./components/CodeQualityCard";
 import TechnicalDebtReport from "./components/TechnicalDebtReport";
 import BenchmarkingReport from "./components/BenchmarkingReport";
 import RepositorySummary from "./components/RepositorySummary";
+import OnboardingAssistant from "./components/OnboardingAssistant";
 
 const defaultHotspotConfig = {
   weights: {
@@ -393,6 +394,12 @@ export default function App() {
           >
             Repository Summary
           </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'ai-onboarding' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai-onboarding')}
+          >
+            Onboarding Assistant
+          </button>
         </aside>
 
         {/* Right Content Area */}
@@ -653,6 +660,15 @@ export default function App() {
           {/* Tab: AI Repository Summary */}
           {activeTab === "ai-summary" && (
             <RepositorySummary
+              projectMetadata={projectMetadata}
+              stats={stats}
+              metrics={metrics}
+            />
+          )}
+
+          {/* Tab: AI Onboarding Assistant */}
+          {activeTab === "ai-onboarding" && (
+            <OnboardingAssistant
               projectMetadata={projectMetadata}
               stats={stats}
               metrics={metrics}
