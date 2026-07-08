@@ -21,6 +21,8 @@ import TechnicalDebtReport from "./components/TechnicalDebtReport";
 import BenchmarkingReport from "./components/BenchmarkingReport";
 import RepositorySummary from "./components/RepositorySummary";
 import OnboardingAssistant from "./components/OnboardingAssistant";
+import RepositoryChat from "./components/RepositoryChat";
+import DocGenerator from "./components/DocGenerator";
 
 const defaultHotspotConfig = {
   weights: {
@@ -400,6 +402,18 @@ export default function App() {
           >
             Onboarding Assistant
           </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'ai-chat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai-chat')}
+          >
+            Codebase Q&amp;A
+          </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'ai-docs' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai-docs')}
+          >
+            Documentation generator
+          </button>
         </aside>
 
         {/* Right Content Area */}
@@ -672,6 +686,26 @@ export default function App() {
               projectMetadata={projectMetadata}
               stats={stats}
               metrics={metrics}
+            />
+          )}
+
+          {/* Tab: AI Codebase Q&A Chat */}
+          {activeTab === "ai-chat" && (
+            <RepositoryChat
+              projectMetadata={projectMetadata}
+              stats={stats}
+              metrics={metrics}
+              graph={currentAnalysis?.graph}
+            />
+          )}
+
+          {/* Tab: Documentation generator */}
+          {activeTab === "ai-docs" && (
+            <DocGenerator
+              projectMetadata={projectMetadata}
+              stats={stats}
+              metrics={metrics}
+              graph={currentAnalysis?.graph}
             />
           )}
 

@@ -317,4 +317,266 @@ Please structure the markdown guide into these exact sections:
     }
 });
 
+// ---------------------------------------------------------------------------
+// POST /api/ai/chat
+// ---------------------------------------------------------------------------
+router.post("/ai/chat", async (req, res, next) => {
+    try {
+        const { isAiConfigured, generateText } = require("./services/aiService");
+
+        if (!isAiConfigured()) {
+            return res.status(503).json({
+                error: "Gemini API key not found."
+            });
+        }
+
+        const { messages, projectMetadata, stats, metrics, graph } = req.body;
+
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return res.status(400).json({ error: "messages array is required." });
+        }
+
+        // Build compact codebase context for the system instruction
+        const contextParts = [];
+
+        // README
+        if (projectMetadata?.readme) {
+            contextParts.push(`## README\n${projectMetadata.readme.slice(0, 3000)}`);
+        }
+
+        // Dependencies
+        const pkg = projectMetadata?.packageJson;
+        if (pkg) {
+            contextParts.push(`## Dependencies\n${(pkg.dependencies || []).join(", ") || "None"}`);
+        }
+
+        // File list
+        if (graph?.nodes && Array.isArray(graph.nodes)) {
+            const fileList = graph.nodes
+                .slice(0, 100) // cap to avoid token overflow
+                .map(n => n.id)
+                .join("\n");
+            contextParts.push(`## File Paths (${graph.nodes.length} total)\n${fileList}${graph.nodes.length > 100 ? `\n... and ${graph.nodes.length - 100} more` : ""}`);
+        }
+
+        // Stats
+        if (stats) {
+            contextParts.push(`## Stats\n- Files: ${stats.totalNodes || "N/A"}\n- Dependencies: ${stats.totalEdges || "N/A"}\n- Avg degree: ${stats.avgDegree || "N/A"}`);
+        }
+
+        // Code quality
+        if (metrics?.codeQuality?.summary) {
+            const cq = metrics.codeQuality.summary;
+            contextParts.push(`## Code Quality\n- Score: ${cq.overallQualityScore}/100 (${cq.rating}, Grade ${cq.grade})`);
+        }
+
+        // Architectural health
+        if (metrics?.architecturalHealth) {
+            const ah = metrics.architecturalHealth;
+            contextParts.push(`## Architectural Health\n- Score: ${ah.score}/100 (${ah.label})`);
+        }
+
+        // Hotspots
+        const topHotspots = (metrics?.hotspots?.files || [])
+            .slice(0, 5)
+            .map(h => `${h.file || h.id} (score: ${h.hotspotScore ?? "?"})`)
+            .join(", ");
+        if (topHotspots) {
+            contextParts.push(`## Top Hotspots\n${topHotspots}`);
+        }
+
+        // Cycles
+        if (metrics?.cycles && metrics.cycles.length > 0) {
+            contextParts.push(`## Circular Dependencies\n${metrics.cycles.length} cycle(s) detected.`);
+        }
+
+        const codebaseContext = contextParts.join("\n\n");
+
+        const systemInstruction = `You are an expert code assistant embedded inside a repository analysis tool called RepoIQ. You have deep knowledge of this specific codebase based on the structural context below. Answer questions about files, dependencies, architecture, complexity, and code quality. Be concise, technical, and precise. Use markdown formatting. Reference specific file paths when relevant.
+
+--- CODEBASE CONTEXT ---
+${codebaseContext}
+--- END CONTEXT ---`;
+
+        // Extract latest user message text to use as prompt
+        const lastUserMsg = messages[messages.length - 1];
+        const prompt = lastUserMsg?.parts?.[0]?.text || lastUserMsg?.text || "";
+
+        // Build conversation history (excluding the last message which becomes the prompt)
+        const history = messages.slice(0, -1).map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.parts?.[0]?.text || m.text || ""}`).join("\n\n");
+
+        const fullPrompt = history
+            ? `Previous conversation:\n${history}\n\nUser: ${prompt}`
+            : prompt;
+
+        const reply = await generateText(fullPrompt, systemInstruction, {
+            temperature: 0.4,
+            maxOutputTokens: 2048
+        });
+
+        res.json({ reply });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /ai/docs
+// ---------------------------------------------------------------------------
+router.post("/ai/docs", async (req, res, next) => {
+    try {
+        const { isAiConfigured, generateText } = require("./services/aiService");
+
+        if (!isAiConfigured()) {
+            return res.status(503).json({
+                error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
+            });
+        }
+
+        const { section, projectMetadata, stats, metrics, graph } = req.body;
+
+        if (!section) {
+            return res.status(400).json({ error: "section parameter is required." });
+        }
+
+        const readme = projectMetadata?.readme
+            ? projectMetadata.readme.slice(0, 4000)
+            : "No README available.";
+
+        const pkg = projectMetadata?.packageJson;
+        const packageDependencies = pkg
+            ? `${(pkg.dependencies || []).join(", ") || "None"}`
+            : "Not available";
+
+        const scripts = pkg && pkg.scripts
+            ? `${(pkg.scripts || []).join(", ") || "None"}`
+            : "Not available";
+
+        const totalNodes = stats?.totalNodes ?? "N/A";
+        const totalEdges = stats?.totalEdges ?? "N/A";
+
+        const filePaths = (graph?.nodes && Array.isArray(graph.nodes))
+            ? graph.nodes.slice(0, 100).map(n => n.id).join("\n")
+            : "N/A";
+
+        const couplingDensity = metrics?.couplingDensity?.density ?? "N/A";
+        const cyclesCount = metrics?.cycles ? metrics.cycles.length : 0;
+
+        const topHotspots = (metrics?.hotspots?.files || [])
+            .slice(0, 5)
+            .map(h => `${h.file || h.id} (score: ${h.hotspotScore ?? "?"})`)
+            .join(", ") || "None identified";
+
+        const codeQualityScore = metrics?.codeQuality?.summary?.overallQualityScore ?? "N/A";
+        const grade = metrics?.codeQuality?.summary?.grade ?? "N/A";
+
+        const systemInstruction = `You are a senior software architect creating publication-quality technical documentation for a codebase. Your output must be written in clean, professional Markdown. Use precise technical terminology, clear section headings, and bullet points. Avoid filler text.`;
+
+        let prompt = "";
+
+        if (section === "architecture") {
+            prompt = `Generate a comprehensive **Architecture & Module Structure** documentation for this repository.
+
+Developer context and metrics:
+- Total Files: ${totalNodes}
+- File paths list:
+${filePaths}
+- README Context:
+${readme}
+
+Please structure the document with the following headers:
+# Codebase Architecture & Modules
+## 1. Directory Structure Overview
+*(Describe the role of each primary directory and how files are organized)*
+## 2. Structural Design Patterns
+*(Explain the architectural style, e.g., Layered, MVC, Client-Server, Modular, or Monolithic, based on the file layout)*
+## 3. Critical Entry Points
+*(Identify the key files that boot/start the application or orchestrate the main flows)*`;
+        } else if (section === "dependencies") {
+            prompt = `Generate a comprehensive **Dependency & Data Flow** documentation for this repository.
+
+Developer context and metrics:
+- Total Dependencies: ${totalEdges}
+- Project Dependencies (from package.json): ${packageDependencies}
+- Modularity / Coupling Density: ${couplingDensity}
+- Circular Cycles detected: ${cyclesCount}
+- Top Hotspots (Files with high complexity/coupling): ${topHotspots}
+
+Please structure the document with the following headers:
+# Dependency & Data Flow Analysis
+## 1. System Integration & Data Flow
+*(Describe how modules integrate and how data flows from entry files down to underlying services)*
+## 2. Modularity & Coupling Assessment
+*(Evaluate the coupling density. Explain why the top hotspots are highly coupled and their impact on change ripple effects)*
+## 3. Circular Dependencies
+*(List/explain any circular dependency cycles found, or confirm if the codebase is cleanly acyclic)*`;
+        } else if (section === "setup") {
+            prompt = `Generate a comprehensive **Quick-Start & Setup Guide** for this repository.
+
+Developer context:
+- Project dependencies: ${packageDependencies}
+- Package scripts: ${scripts}
+- README context:
+${readme}
+
+Please structure the document with the following headers:
+# Quick-Start & Setup Guide
+## 1. Prerequisites & Environment Setup
+*(Document the software prerequisites, database dependencies, and necessary environment variables)*
+## 2. Local Installation & Run
+*(Write a step-by-step developer setup checklist to download dependencies, build the project, and run it locally)*
+## 3. Command Scripts Dictionary
+*(Explain the purpose and usage of all available package/command scripts)*`;
+        } else if (section === "api") {
+            prompt = `Generate a comprehensive **API & Integration Map** for this repository.
+
+Developer context:
+- File paths list:
+${filePaths}
+- Project dependencies: ${packageDependencies}
+
+Please structure the document with the following headers:
+# API & Integration Map
+## 1. Routing Controllers & Endpoints
+*(Identify router, controllers, or endpoint files and explain what request paths they handle)*
+## 2. Request & Response Lifecycle
+*(Map how a client request is handled, from the entry port/server down to the controllers and response output)*
+## 3. Integration Guidelines
+*(Document how external clients or other modules should interface with this project)*`;
+        } else if (section === "readme") {
+            prompt = `Generate a clean, professional, and ready-to-use **README.md** summarizing this repository in brief.
+
+Developer context and metrics:
+- Overall Code Quality: ${codeQualityScore}/100 (Grade ${grade})
+- Project dependencies: ${packageDependencies}
+- Stats: Files: ${totalNodes}, Dependencies: ${totalEdges}
+- README context:
+${readme}
+
+Please structure the document with the following headers:
+# Project Overview
+## 1. Core Purpose & Value Proposition
+*(Summarize what this repository does, its target audience, and the problem it solves in brief)*
+## 2. Key Features & Capabilities
+*(Provide a bulleted list of the main features present in the code)*
+## 3. Technology Stack & Key Libraries
+*(List the main languages, frameworks, and database packages identified)*
+## 4. Architectural Summary
+*(Provide a high-level overview of the directory layout and system architecture)*`;
+        } else {
+            return res.status(400).json({ error: "Invalid section parameter specified." });
+        }
+
+        const markdown = await generateText(prompt, systemInstruction, {
+            temperature: 0.3,
+            maxOutputTokens: 2500
+        });
+
+        res.json({ markdown });
+    }
+    catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;
