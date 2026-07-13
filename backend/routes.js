@@ -21,7 +21,8 @@ function isValidGitHubUrl(url) {
 function cleanupDir(dirPath) {
     try {
         fs.rmSync(dirPath, { recursive: true, force: true });
-    } catch (err) {
+    }
+    catch (err) {
         console.error(`[cleanup] Failed to remove ${dirPath}:`, err.message);
     }
 }
@@ -54,7 +55,8 @@ router.post("/analyze/local", (req, res, next) => {
             repoPath: resolved,
             analysis: result
         });
-    } catch (err) {
+    }
+    catch (err) {
         next(err);
     }
 });
@@ -105,7 +107,8 @@ router.post("/analyze/git", (req, res, next) => {
 
         // Cleanup asynchronously — response is already sent
         setImmediate(() => cleanupDir(cloneDir));
-    } catch (err) {
+    }
+    catch (err) {
         // Make sure we clean up even on failure
         if (cloneDir) {
             cleanupDir(cloneDir);
@@ -149,7 +152,8 @@ router.post("/paths", (req, res, next) => {
         });
 
         res.json(result);
-    } catch (err) {
+    }
+    catch (err) {
         next(err);
     }
 });
@@ -415,7 +419,8 @@ ${codebaseContext}
         });
 
         res.json({ reply });
-    } catch (err) {
+    }
+    catch (err) {
         next(err);
     }
 });
@@ -573,6 +578,110 @@ Please structure the document with the following headers:
         });
 
         res.json({ markdown });
+    }
+    catch (err) {
+        next(err);
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /ai/architecture-insights
+// ---------------------------------------------------------------------------
+router.post("/ai/architecture-insights", async (req, res, next) => {
+    try {
+        const { isAiConfigured, generateJSON } = require("./services/aiService");
+
+        if (!isAiConfigured()) {
+            return res.status(503).json({
+                error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
+            });
+        }
+
+        const { projectMetadata, stats, graph } = req.body;
+
+        const readme = projectMetadata?.readme
+            ? projectMetadata.readme.slice(0, 3000)
+            : "No README available.";
+
+        const pkg = projectMetadata?.packageJson;
+        const packageDeps = pkg
+            ? `${(pkg.dependencies || []).join(", ") || "None"}`
+            : "Not available";
+
+        const filePaths = (graph?.nodes && Array.isArray(graph.nodes))
+            ? graph.nodes.slice(0, 120).map(n => n.id).join("\n")
+            : "N/A";
+
+        const totalFiles = stats?.totalNodes ?? "N/A";
+        const totalEdges = stats?.totalEdges ?? "N/A";
+
+        const systemInstruction = `You are an expert software architect. Analyze the repository structure below and return a structured JSON response with three fields:
+
+1. "pattern": Identify the dominant architectural pattern (e.g. MVC, Layered Architecture, Microservices, Monolithic, Client-Server, Event-Driven, Component-Based, or other). Include a confidence level (Low, Medium, or High) and a brief explanation of why you identified this pattern.
+
+2. "layers": Classify files into logical architectural layers such as UI/Presentation, Business Logic/Services, Data Access/Models, Configuration, Routing/Controllers, Authentication/Security, Utilities/Helpers, Testing, Build/Tooling, or any other relevant layers. Each layer should have a name, description, and a list of file paths belonging to it. Every file should belong to exactly one layer.
+
+3. "responsibilities": For each file, assign a short responsibility tag (e.g. Controller, Service, Model, View, Config, Utility, Test, Middleware, Router) and a one-line description of what the file does.
+
+Be precise and base your classification on file names, directory structure, and known framework conventions.`;
+
+        const prompt = `Analyze this repository and classify its architecture:
+
+- Total Files: ${totalFiles}
+- Total Dependencies: ${totalEdges}
+- Project Dependencies: ${packageDeps}
+- README:
+${readme}
+
+- File Paths:
+${filePaths}`;
+
+        const responseSchema = {
+            type: "object",
+            properties: {
+                pattern: {
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        confidence: { type: "string", enum: ["Low", "Medium", "High"] },
+                        explanation: { type: "string" }
+                    },
+                    required: ["name", "confidence", "explanation"]
+                },
+                layers: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string" },
+                            description: { type: "string" },
+                            files: { type: "array", items: { type: "string" } }
+                        },
+                        required: ["name", "description", "files"]
+                    }
+                },
+                responsibilities: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            file: { type: "string" },
+                            responsibility: { type: "string" },
+                            description: { type: "string" }
+                        },
+                        required: ["file", "responsibility", "description"]
+                    }
+                }
+            },
+            required: ["pattern", "layers", "responsibilities"]
+        };
+
+        const result = await generateJSON(prompt, systemInstruction, responseSchema, {
+            temperature: 0.2,
+            maxOutputTokens: 4096
+        });
+
+        res.json(result);
     }
     catch (err) {
         next(err);
