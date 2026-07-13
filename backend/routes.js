@@ -175,6 +175,7 @@ router.get("/ai/status", (_req, res) => {
 router.post("/ai/summary", async (req, res, next) => {
     try {
         const { isAiConfigured, generateText } = require("./services/aiService");
+        const { getCache, setCache } = require("./services/cacheService");
 
         if (!isAiConfigured()) {
             return res.status(503).json({
@@ -182,10 +183,16 @@ router.post("/ai/summary", async (req, res, next) => {
             });
         }
 
-        const { projectMetadata, stats, metrics } = req.body;
+        const { projectMetadata, stats, metrics, repoKey } = req.body;
 
         if (!projectMetadata && !stats) {
             return res.status(400).json({ error: "projectMetadata or stats are required." });
+        }
+
+        // Check cache
+        if (repoKey) {
+            const cached = getCache(repoKey, "summary");
+            if (cached) return res.json(cached);
         }
 
         // Build structured context for the LLM
@@ -230,7 +237,9 @@ router.post("/ai/summary", async (req, res, next) => {
             maxOutputTokens: 2048
         });
 
-        res.json({ summary });
+        const result = { summary };
+        if (repoKey) setCache(repoKey, "summary", result);
+        res.json(result);
     }
     catch (err) {
         next(err);
@@ -243,6 +252,7 @@ router.post("/ai/summary", async (req, res, next) => {
 router.post("/ai/onboarding", async (req, res, next) => {
     try {
         const { isAiConfigured, generateText } = require("./services/aiService");
+        const { getCache, setCache } = require("./services/cacheService");
 
         if (!isAiConfigured()) {
             return res.status(503).json({
@@ -250,7 +260,14 @@ router.post("/ai/onboarding", async (req, res, next) => {
             });
         }
 
-        const { experience, goal, techFocus, projectMetadata, stats, metrics } = req.body;
+        const { experience, goal, techFocus, projectMetadata, stats, metrics, repoKey } = req.body;
+
+        // Check cache
+        const cacheKey = `onboarding_${experience}_${goal}_${techFocus}`;
+        if (repoKey) {
+            const cached = getCache(repoKey, cacheKey);
+            if (cached) return res.json(cached);
+        }
 
         if (!experience || !goal || !techFocus) {
             return res.status(400).json({ error: "experience, goal, and techFocus are required." });
@@ -314,7 +331,9 @@ Please structure the markdown guide into these exact sections:
             maxOutputTokens: 2048
         });
 
-        res.json({ guide });
+        const result = { guide };
+        if (repoKey) setCache(repoKey, cacheKey, result);
+        res.json(result);
     }
     catch (err) {
         next(err);
@@ -431,6 +450,7 @@ ${codebaseContext}
 router.post("/ai/docs", async (req, res, next) => {
     try {
         const { isAiConfigured, generateText } = require("./services/aiService");
+        const { getCache, setCache } = require("./services/cacheService");
 
         if (!isAiConfigured()) {
             return res.status(503).json({
@@ -438,7 +458,14 @@ router.post("/ai/docs", async (req, res, next) => {
             });
         }
 
-        const { section, projectMetadata, stats, metrics, graph } = req.body;
+        const { section, projectMetadata, stats, metrics, graph, repoKey } = req.body;
+
+        // Check cache
+        const docsCacheKey = `docs_${section}`;
+        if (repoKey) {
+            const cached = getCache(repoKey, docsCacheKey);
+            if (cached) return res.json(cached);
+        }
 
         if (!section) {
             return res.status(400).json({ error: "section parameter is required." });
@@ -577,7 +604,9 @@ Please structure the document with the following headers:
             maxOutputTokens: 2500
         });
 
-        res.json({ markdown });
+        const docsResult = { markdown };
+        if (repoKey) setCache(repoKey, docsCacheKey, docsResult);
+        res.json(docsResult);
     }
     catch (err) {
         next(err);
@@ -590,6 +619,7 @@ Please structure the document with the following headers:
 router.post("/ai/architecture-insights", async (req, res, next) => {
     try {
         const { isAiConfigured, generateJSON } = require("./services/aiService");
+        const { getCache, setCache } = require("./services/cacheService");
 
         if (!isAiConfigured()) {
             return res.status(503).json({
@@ -597,7 +627,13 @@ router.post("/ai/architecture-insights", async (req, res, next) => {
             });
         }
 
-        const { projectMetadata, stats, graph } = req.body;
+        const { projectMetadata, stats, graph, repoKey } = req.body;
+
+        // Check cache
+        if (repoKey) {
+            const cached = getCache(repoKey, "architecture-insights");
+            if (cached) return res.json(cached);
+        }
 
         const readme = projectMetadata?.readme
             ? projectMetadata.readme.slice(0, 3000)
@@ -681,6 +717,7 @@ ${filePaths}`;
             maxOutputTokens: 4096
         });
 
+        if (repoKey) setCache(repoKey, "architecture-insights", result);
         res.json(result);
     }
     catch (err) {

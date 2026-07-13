@@ -70,6 +70,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("overview"); // 'overview' | 'metrics' | 'cycles' | 'impact' | 'hotspots'
   const [qualitySubTab, setQualitySubTab] = useState("maintainability");
 
+  // Lifted AI feature states (persist across tab switches)
+  const [aiSummaryCache, setAiSummaryCache] = useState(null);
+  const [aiOnboardingCache, setAiOnboardingCache] = useState(null);
+  const [aiChatMessages, setAiChatMessages] = useState([]);
+  const [aiDocsCache, setAiDocsCache] = useState({});
+  const [aiArchitectureCache, setAiArchitectureCache] = useState(null);
+
   function getCouplingLabel(density) {
     const d = Number(density || 0);
     if (d <= 0.35) return "Highly Modular";
@@ -122,6 +129,13 @@ export default function App() {
       }
 
       setData(resData);
+
+      // Clear AI caches for new analysis
+      setAiSummaryCache(null);
+      setAiOnboardingCache(null);
+      setAiChatMessages([]);
+      setAiDocsCache({});
+      setAiArchitectureCache(null);
 
       // Extract a name for the top ribbon
       let repoName = inputValue.trim().split(/[/\\]/).pop() || "Repository";
@@ -684,6 +698,9 @@ export default function App() {
               projectMetadata={projectMetadata}
               stats={stats}
               metrics={metrics}
+              repoKey={repoContext?.link}
+              cachedSummary={aiSummaryCache}
+              onSummaryGenerated={setAiSummaryCache}
             />
           )}
 
@@ -693,6 +710,9 @@ export default function App() {
               projectMetadata={projectMetadata}
               stats={stats}
               metrics={metrics}
+              repoKey={repoContext?.link}
+              cachedGuide={aiOnboardingCache}
+              onGuideGenerated={setAiOnboardingCache}
             />
           )}
 
@@ -703,6 +723,8 @@ export default function App() {
               stats={stats}
               metrics={metrics}
               graph={currentAnalysis?.graph}
+              messages={aiChatMessages}
+              onMessagesChange={setAiChatMessages}
             />
           )}
 
@@ -713,6 +735,9 @@ export default function App() {
               stats={stats}
               metrics={metrics}
               graph={currentAnalysis?.graph}
+              repoKey={repoContext?.link}
+              cachedDocs={aiDocsCache}
+              onDocsGenerated={setAiDocsCache}
             />
           )}
 
@@ -722,6 +747,9 @@ export default function App() {
               projectMetadata={projectMetadata}
               stats={stats}
               graph={currentAnalysis?.graph}
+              repoKey={repoContext?.link}
+              cachedData={aiArchitectureCache}
+              onDataGenerated={setAiArchitectureCache}
             />
           )}
 

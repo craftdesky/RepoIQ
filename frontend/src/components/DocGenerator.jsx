@@ -87,9 +87,9 @@ const SECTIONS = [
   { id: "readme", label: "Project Brief & README", filename: "README_AUTO.md" }
 ];
 
-export default function DocGenerator({ projectMetadata, stats, metrics, graph }) {
+export default function DocGenerator({ projectMetadata, stats, metrics, graph, repoKey, cachedDocs, onDocsGenerated }) {
   const [activeSection, setActiveSection] = useState("architecture");
-  const [docs, setDocs] = useState({});
+  const [docs, setDocs] = useState(cachedDocs || {});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(null);
@@ -113,7 +113,8 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph })
           projectMetadata,
           stats,
           metrics,
-          graph
+          graph,
+          repoKey
         })
       });
       if (!res.ok) {
@@ -121,7 +122,9 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph })
         throw new Error(errData.error || `Failed to generate docs (${res.status})`);
       }
       const data = await res.json();
-      setDocs(prev => ({ ...prev, [sectionId]: data.markdown }));
+      const updated = { ...docs, [sectionId]: data.markdown };
+      setDocs(updated);
+      if (onDocsGenerated) onDocsGenerated(updated);
     } catch (err) {
       setError(err.message);
     } finally {

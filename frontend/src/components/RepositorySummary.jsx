@@ -156,8 +156,8 @@ function inlineFormat(text) {
 
 const API_BASE = "http://localhost:5000/api";
 
-export default function RepositorySummary({ projectMetadata, stats, metrics }) {
-  const [summary, setSummary] = useState(null);
+export default function RepositorySummary({ projectMetadata, stats, metrics, repoKey, cachedSummary, onSummaryGenerated }) {
+  const [summary, setSummary] = useState(cachedSummary || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(null); // null = checking
@@ -171,9 +171,9 @@ export default function RepositorySummary({ projectMetadata, stats, metrics }) {
       .catch(() => setAiConfigured(false));
   }, []);
 
-  // Auto-fetch summary once AI is confirmed configured
+  // Auto-fetch summary once AI is confirmed configured (skip if cached)
   useEffect(() => {
-    if (aiConfigured !== true || hasFetched.current) return;
+    if (aiConfigured !== true || hasFetched.current || cachedSummary) return;
     hasFetched.current = true;
     fetchSummary();
   }, [aiConfigured]);
@@ -185,7 +185,7 @@ export default function RepositorySummary({ projectMetadata, stats, metrics }) {
       const res = await fetch(`${API_BASE}/ai/summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectMetadata, stats, metrics })
+        body: JSON.stringify({ projectMetadata, stats, metrics, repoKey })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -193,6 +193,7 @@ export default function RepositorySummary({ projectMetadata, stats, metrics }) {
       }
       const data = await res.json();
       setSummary(data.summary);
+      if (onSummaryGenerated) onSummaryGenerated(data.summary);
     } catch (err) {
       setError(err.message);
     } finally {

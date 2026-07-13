@@ -84,12 +84,12 @@ const GOAL_OPTIONS = ["General Exploration", "Adding a Feature", "Fixing a Bug",
 const TECH_FOCUS_OPTIONS = ["No Preference", "React / Frontend", "Node.js / Backend", "Full-Stack", "Build / CI/CD", "Database / Data Layer"];
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function OnboardingAssistant({ projectMetadata, stats, metrics }) {
+export default function OnboardingAssistant({ projectMetadata, stats, metrics, repoKey, cachedGuide, onGuideGenerated }) {
   const [experience, setExperience] = useState("Junior");
   const [goal, setGoal] = useState("General Exploration");
   const [techFocus, setTechFocus] = useState("No Preference");
 
-  const [guide, setGuide] = useState(null);
+  const [guide, setGuide] = useState(cachedGuide || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(null);
@@ -110,7 +110,7 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics })
       const res = await fetch(`${API_BASE}/ai/onboarding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ experience, goal, techFocus, projectMetadata, stats, metrics })
+        body: JSON.stringify({ experience, goal, techFocus, projectMetadata, stats, metrics, repoKey })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -118,6 +118,7 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics })
       }
       const data = await res.json();
       setGuide(data.guide);
+      if (onGuideGenerated) onGuideGenerated(data.guide);
     } catch (err) {
       setError(err.message);
     } finally {

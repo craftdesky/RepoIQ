@@ -88,7 +88,8 @@ async function generateJSON(contents, systemInstruction = null, responseSchema =
         const rawText = response.text || "{}";
         try {
             return JSON.parse(rawText);
-        } catch (parseError) {
+        }
+        catch (error) {
             console.error("[aiService] Failed to parse JSON response:", rawText);
             throw new Error("AI returned malformed JSON response.");
         }

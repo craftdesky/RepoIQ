@@ -21,8 +21,8 @@ const LAYER_COLORS = [
   { bg: "#faf5ff", border: "#e9d5ff", tag: "#7e22ce" }
 ];
 
-export default function ArchitectureInsights({ projectMetadata, stats, graph }) {
-  const [data, setData] = useState(null);
+export default function ArchitectureInsights({ projectMetadata, stats, graph, repoKey, cachedData, onDataGenerated }) {
+  const [data, setData] = useState(cachedData || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(null);
@@ -44,7 +44,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph }) 
       const res = await fetch(`${API_BASE}/ai/architecture-insights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectMetadata, stats, graph })
+        body: JSON.stringify({ projectMetadata, stats, graph, repoKey })
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -52,6 +52,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph }) 
       }
       const result = await res.json();
       setData(result);
+      if (onDataGenerated) onDataGenerated(result);
       // Auto-expand the first layer
       if (result.layers && result.layers.length > 0) {
         setExpandedLayers({ [result.layers[0].name]: true });

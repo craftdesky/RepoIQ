@@ -77,8 +77,12 @@ const SUGGESTIONS = [
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function RepositoryChat({ projectMetadata, stats, metrics, graph }) {
-  const [messages, setMessages] = useState([]);
+export default function RepositoryChat({ projectMetadata, stats, metrics, graph, messages: messagesProp, onMessagesChange }) {
+  const messages = messagesProp || [];
+  function setMessages(updater) {
+    const next = typeof updater === 'function' ? updater(messages) : updater;
+    if (onMessagesChange) onMessagesChange(next);
+  }
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [aiConfigured, setAiConfigured] = useState(null);
@@ -141,7 +145,7 @@ export default function RepositoryChat({ projectMetadata, stats, metrics, graph 
   }
 
   function handleClear() {
-    setMessages([]);
+    if (onMessagesChange) onMessagesChange([]);
     setInput("");
   }
 
