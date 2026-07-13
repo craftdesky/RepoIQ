@@ -76,6 +76,7 @@ export default function App() {
   const [aiChatMessages, setAiChatMessages] = useState([]);
   const [aiDocsCache, setAiDocsCache] = useState({});
   const [aiArchitectureCache, setAiArchitectureCache] = useState(null);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
 
   function getCouplingLabel(density) {
     const d = Number(density || 0);
@@ -232,6 +233,22 @@ export default function App() {
     setData(null);
     setInputValue("");
     setSelectedNode(null);
+    setShowHamburgerMenu(false);
+  };
+
+  const handleExportGraphJson = () => {
+    const graphData = currentAnalysis?.graph || {};
+    const jsonStr = JSON.stringify(graphData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${repoContext.name || "repository"}_graph.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setShowHamburgerMenu(false);
   };
 
   // --- LANDING PAGE ---
@@ -310,13 +327,29 @@ export default function App() {
           </div>
         </div>
         <div className="ribbon-right">
-          <button className="hamburger-btn" aria-label="Menu">
+          <button
+            className="hamburger-btn"
+            aria-label="Menu"
+            onClick={() => setShowHamburgerMenu((prev) => !prev)}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
+          {showHamburgerMenu && (
+            <div className="hamburger-menu-dropdown">
+              <button className="hamburger-menu-item" onClick={handleExportGraphJson}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export Graph JSON
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
