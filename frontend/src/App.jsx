@@ -77,6 +77,14 @@ export default function App() {
   const [aiDocsCache, setAiDocsCache] = useState({});
   const [aiArchitectureCache, setAiArchitectureCache] = useState(null);
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const [previousScans, setPreviousScans] = useState(() => {
+    try {
+      const stored = localStorage.getItem("repoiq.previousScans");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   function getCouplingLabel(density) {
     const d = Number(density || 0);
@@ -144,6 +152,24 @@ export default function App() {
         repoName = repoName.slice(0, -4);
       }
       setRepoContext({ name: repoName, link: inputValue.trim() });
+
+      const linkTrimmed = inputValue.trim();
+      const newScanEntry = {
+        repoContext: { name: repoName, link: linkTrimmed },
+        data: resData,
+        sourceType,
+        timestamp: Date.now(),
+      };
+      setPreviousScans((prevScans) => {
+        const filtered = prevScans.filter((s) => s.repoContext?.link !== linkTrimmed);
+        const updated = [newScanEntry, ...filtered].slice(0, 3);
+        try {
+          localStorage.setItem("repoiq.previousScans", JSON.stringify(updated));
+        } catch (e) {
+          console.error("Failed to save previous scans:", e);
+        }
+        return updated;
+      });
       if (!options.keepCurrentTab) {
         setActiveTab("overview");
       }
@@ -251,6 +277,23 @@ export default function App() {
     setShowHamburgerMenu(false);
   };
 
+  const handleLoadScan = (scan) => {
+    if (!scan || !scan.data) return;
+    setData(scan.data);
+    setRepoContext(scan.repoContext || { name: "Repository", link: "" });
+    setInputValue(scan.repoContext?.link || "");
+    setSourceType(scan.sourceType || "local");
+    setSelectedNode(null);
+
+    setAiSummaryCache(null);
+    setAiOnboardingCache(null);
+    setAiChatMessages([]);
+    setAiDocsCache({});
+    setAiArchitectureCache(null);
+
+    setShowHamburgerMenu(false);
+  };
+
   // --- LANDING PAGE ---
   if (!data) {
     return (
@@ -340,6 +383,26 @@ export default function App() {
           </button>
           {showHamburgerMenu && (
             <div className="hamburger-menu-dropdown">
+              <div className="hamburger-menu-section-header">Previous scans</div>
+              {previousScans.length > 0 ? (
+                previousScans.map((scan, idx) => (
+                  <button
+                    key={idx}
+                    className="hamburger-menu-scan-item"
+                    onClick={() => handleLoadScan(scan)}
+                    title={`Load scan: ${scan.repoContext?.link}`}
+                  >
+                    <span className="hamburger-menu-scan-name">{scan.repoContext?.name || "Repository"}</span>
+                    <span className="hamburger-menu-scan-link">{scan.repoContext?.link || ""}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="hamburger-menu-empty">No previous scans</div>
+              )}
+
+              <div className="hamburger-menu-divider" />
+
+              <div className="hamburger-menu-section-header">Export</div>
               <button className="hamburger-menu-item" onClick={handleExportGraphJson}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
