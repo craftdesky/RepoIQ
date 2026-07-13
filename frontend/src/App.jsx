@@ -23,6 +23,7 @@ import RepositorySummary from "./components/RepositorySummary";
 import OnboardingAssistant from "./components/OnboardingAssistant";
 import RepositoryChat from "./components/RepositoryChat";
 import DocGenerator from "./components/DocGenerator";
+import ArchitectureInsights from "./components/ArchitectureInsights";
 
 const defaultHotspotConfig = {
   weights: {
@@ -414,6 +415,12 @@ export default function App() {
           >
             Documentation generator
           </button>
+          <button
+            className={`sidebar-btn ${activeTab === 'ai-architecture' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai-architecture')}
+          >
+            Architecture Insights
+          </button>
         </aside>
 
         {/* Right Content Area */}
@@ -705,6 +712,15 @@ export default function App() {
               projectMetadata={projectMetadata}
               stats={stats}
               metrics={metrics}
+              graph={currentAnalysis?.graph}
+            />
+          )}
+
+          {/* Tab: Architecture Insights */}
+          {activeTab === "ai-architecture" && (
+            <ArchitectureInsights
+              projectMetadata={projectMetadata}
+              stats={stats}
               graph={currentAnalysis?.graph}
             />
           )}
