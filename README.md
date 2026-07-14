@@ -1,6 +1,6 @@
 # RepoIQ 🧠
 
-> **An interactive codebase visualization engine and AI-powered repository intelligence dashboard.**
+> **Codebase intelligence for modern developers. Analyze architecture, visualize dependencies, detect cycles, and understand complex repositories—all from a single platform.**
 
 RepoIQ transforms complex software repositories into interactive dependency graphs, actionable code quality metrics, and structured AI-driven documentation. Built with a clean, minimalist interface, RepoIQ bridges the gap between raw source code and architectural clarity for developers, tech leads, and onboarding engineers.
 
@@ -11,27 +11,27 @@ RepoIQ transforms complex software repositories into interactive dependency grap
 ### 🔍 Interactive Codebase Visualization
 * **Dependency Graph**: Explore file-to-file relationships, imports, and module interdependencies through an interactive node-and-edge graph.
 * **Architecture / Folder View**: Zoom out from individual files to inspect high-level architectural relationships grouped by directory structure.
-* **Path Explorer & Cycle Detection**: Trace the exact dependency path between any two modules and automatically detect problematic circular import loops (`A → B → C → A`).
+* **Path Explorer & Cycle Detection**: Trace the exact dependency path between any two modules and automatically detect problematic circular import loops.
 * **Critical Connectors**: Identify central hub modules and architectural bottlenecks that tie large portions of your codebase together.
 
 ### 📊 Deep Code Quality & Metrics
 * **Hotspot Analysis**: Multi-factor scoring combining code complexity, coupling density, and structural metrics to pinpoint areas of high technical debt.
 * **Maintainability Index & Halstead Metrics**: Quantitative evaluations of file readability, vocabulary size, and maintenance effort across modules.
 * **Coupling Density & Cyclomatic Complexity**: Measure the degree of module interdependence and control flow complexity to guide refactoring priorities.
-* **Customizable Hotspot Settings**: Adjust thresholds (`hotspotConfig`) directly from the UI to tailor risk detection to your team's engineering standards.
+* **Customizable Hotspot Settings**: Adjust thresholds directly from the UI to tailor risk detection to your team's engineering standards.
 
 ### 🤖 AI-Powered Intelligence Suite
 Integrated with frontier LLMs, RepoIQ turns structural AST data into human-readable insights:
 * **Repository Summary**: Executive-level overview of the repository's purpose, key packages, and core responsibilities.
 * **Intelligent Onboarding Assistant**: Generate personalized, step-by-step onboarding walkthroughs customized by **Experience Level** (`Junior`, `Mid`, `Senior`), **Onboarding Goal**, and **Primary Tech Focus**.
 * **Codebase Q&A Chat**: A natural language chat assistant equipped with contextual graph data, metrics, and preset suggestion chips to answer structural questions instantly.
-* **Documentation Generator**: Automatically draft and export production-ready `.md` documentation across 5 core sections:
+* **Documentation Generator**: Automatically draft and export production-ready documentation across 5 core sections:
   1. *Architecture & Modules*
   2. *Dependency & Flow Analysis*
   3. *Quick-Start & Setup Guide*
   4. *API & Integration Map*
   5. *Project Brief & README*
-* **Architecture Insights**: Automated layer classification (`UI/Presentation`, `Business Logic/Services`, `Data Access/Models`, etc.) and dominant design pattern recognition (`MVC`, `Layered Architecture`, `Clean Architecture`) complete with confidence badges (`High`, `Medium`, `Low`).
+* **Architecture Insights**: Automated layer classification (`UI/Presentation`, `Business Logic/Services`, `Data Access/Models`, etc.) and dominant design pattern recognition (`MVC`, `Layered Architecture`, `Clean Architecture`, etc) complete with confidence badges (`High`, `Medium`, `Low`).
 
 ### ⚡ Performance & UX
 * **Local File-Based Caching**: AI responses are persisted automatically, ensuring identical queries load instantly without re-invoking the API.
@@ -42,9 +42,14 @@ Integrated with frontier LLMs, RepoIQ turns structural AST data into human-reada
 
 ## 🛠️ Technology Stack
 
-* **Frontend**: React (Vite), Vanilla CSS, custom SVG & graph rendering engines.
-* **Backend**: Node.js, Express, AST analysis pipelines (`routes.js`), file-system caching utilities (`cacheService.js`).
-* **AI Engine**: Google Gemini API with structured JSON schemas for predictable, highly accurate analysis outputs.
+| Layer | Technologies & Tools | Purpose / Description |
+| :--- | :--- | :--- |
+| **Frontend** | React, Vite, Vanilla CSS | Responsive minimalist UI, interactive navigation, and real-time visualization controls. |
+| **Visualizations** | Custom SVG Engine, Graph Algorithms | Interactive dependency network rendering, circular cycle detection, and high-performance folder maps. |
+| **Backend API** | Node.js, Express | REST API server handling local path lookups, remote git repository clones, and analysis requests. |
+| **Static Analysis** | Custom AST Parsers & Metric Engines | Extracts file imports, calculates Halstead complexity, Maintainability Index, and cyclomatic complexity across modules. |
+| **AI Intelligence** | Google Gemini API | Powers the AI tools using structured JSON output schemas for predictable, highly accurate analysis. |
+| **Persistence & Cache** | Local JSON Store, Browser `localStorage` | Instant response caching for AI queries and recent scan history for seamless project switching. |
 
 ---
 
