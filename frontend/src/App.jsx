@@ -6,7 +6,7 @@ import HalsteadCard from "./components/HalsteadCard";
 import CyclomaticCard from "./components/CyclomaticCard";
 import CouplingDensityGauge from "./components/CouplingDensityGauge";
 import HealthScoreChart from "./components/HealthScoreChart";
-import HotspotCard from "./components/HotspotCard";
+import HotspotCard, { TopHotspotsCard } from "./components/HotspotCard";
 import HotspotTable from "./components/HotspotTable";
 import HotspotSettings from "./components/HotspotSettings";
 import CriticalConnectorsCard from "./components/CriticalConnectorsCard";
@@ -680,24 +680,18 @@ export default function App() {
 
           {/* Tab: Hotspots */}
           {activeTab === "hotspots" && (
-            <div style={{ display: "grid", gap: "1.5rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-                <div className="text-muted" style={{ fontSize: "0.95rem" }}>
-                  Configure hotspot weights and thresholds, then re-run analysis to refresh the scores.
-                </div>
-                <button type="button" className="analyze-btn" onClick={handleReanalyze} disabled={loading}>
-                  {loading ? "Re-running..." : "Re-run Analysis"}
-                </button>
-              </div>
-
-              <HotspotSettings config={hotspotConfig} onChange={handleHotspotConfigChange} />
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+            <div style={{ display: "grid", gap: "2rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem", alignItems: "stretch" }}>
+                <HotspotSettings
+                  config={hotspotConfig}
+                  onChange={handleHotspotConfigChange}
+                  onReanalyze={handleReanalyze}
+                  loading={loading}
+                />
                 <HotspotCard hotspots={metrics?.hotspots} />
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
-                </div>
+                <TopHotspotsCard hotspots={metrics?.hotspots} />
               </div>
+              <HotspotTable files={metrics?.hotspots?.files || []} onRowClick={(id) => setSelectedNode(selectedNode === id ? null : id)} />
             </div>
           )}
 
