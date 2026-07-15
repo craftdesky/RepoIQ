@@ -3,11 +3,13 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 const { v4: uuidv4 } = require("uuid");
 const { analyzeRepo } = require("../analyzer/analyzeRepo");
+const { findDependencyPaths } = require("../analyzer/graph/pathFinder");
+const { isAiConfigured, generateText } = require("./services/aiService");
+const { getCache, setCache } = require("./services/cacheService");
 
 const TEMP_DIR = path.join(__dirname, "temp-clones");
 
-const GITHUB_URL_REGEX =
-    /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/;
+const GITHUB_URL_REGEX = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?$/;
 
 const MAX_CLONE_TIMEOUT_MS = 120_000; // 2 minutes
 
@@ -19,8 +21,8 @@ function cleanupDir(dirPath) {
     try {
         fs.rmSync(dirPath, { recursive: true, force: true });
     }
-    catch (err) {
-        console.error(`[cleanup] Failed to remove ${dirPath}:`, err.message);
+    catch (error) {
+        console.error(`[cleanup] Failed to remove ${dirPath}:`, error.message);
     }
 }
 
@@ -50,8 +52,8 @@ const analyzeLocalRepo = (req, res, next) => {
             analysis: result
         });
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
@@ -67,12 +69,10 @@ const analyzeGithubRepo = (req, res, next) => {
 
         if (!isValidGitHubUrl(gitUrl)) {
             return res.status(400).json({
-                error:
-                    "Invalid GitHub URL. Expected format: https://github.com/<owner>/<repo>"
+                error: "Invalid GitHub URL. Expected format: https://github.com/<owner>/<repo>"
             });
         }
 
-        // Prepare temp directory
         fs.mkdirSync(TEMP_DIR, { recursive: true });
         cloneDir = path.join(TEMP_DIR, uuidv4());
 
@@ -84,12 +84,10 @@ const analyzeGithubRepo = (req, res, next) => {
         });
         console.log("[clone] Clone complete.");
 
-        // Analyze
         const result = analyzeRepo(cloneDir, {
             hotspotConfig: req.body.hotspotConfig
         });
 
-        // Respond
         res.json({
             source: "github",
             gitUrl,
@@ -99,27 +97,16 @@ const analyzeGithubRepo = (req, res, next) => {
         // Cleanup asynchronously — response is already sent
         setImmediate(() => cleanupDir(cloneDir));
     }
-    catch (err) {
-        // Make sure we clean up even on failure
+    catch (error) {
         if (cloneDir) {
             cleanupDir(cloneDir);
         }
 
-        // Friendly messages for common clone errors
-        if (err.message && err.message.includes("ETIMEDOUT")) {
-            return res
-                .status(504)
-                .json({ error: "Clone timed out. The repository may be too large." });
+        if (error.message) {
+            return res.status(500).json({ error: error.message });
         }
 
-        if (err.status === 128 || (err.message && err.message.includes("fatal:"))) {
-            return res.status(400).json({
-                error:
-                    "Git clone failed. The repository may be private or the URL may be incorrect."
-            });
-        }
-
-        next(err);
+        next(error);
     }
 };
 
@@ -130,10 +117,7 @@ const getDependencyPaths = (req, res, next) => {
         if (!graph || !startId || !targetId) {
             return res.status(400).json({ error: "graph, startId, and targetId are required" });
         }
-
-        const { findDependencyPaths } = require("../analyzer/graph/pathFinder");
         
-        // Find paths with limits as requested (max 20 paths, max depth 20)
         const result = findDependencyPaths(graph, startId, targetId, {
             maxPaths: 20,
             maxDepth: 20
@@ -141,13 +125,12 @@ const getDependencyPaths = (req, res, next) => {
 
         res.json(result);
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
 const getAIStatus = (req, res) => {
-    const { isAiConfigured } = require("./services/aiService");
     res.json({
         configured: isAiConfigured(),
         model: process.env.GEMINI_MODEL || "gemini-2.5-flash"
@@ -156,28 +139,23 @@ const getAIStatus = (req, res) => {
 
 const getAISummary = async (req, res, next) => {
     try {
-        const { isAiConfigured, generateText } = require("./services/aiService");
-        const { getCache, setCache } = require("./services/cacheService");
-
         if (!isAiConfigured()) {
             return res.status(503).json({
-                error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
+                error: "GEMINI API key not found."
             });
         }
 
         const { projectMetadata, stats, metrics, repoKey } = req.body;
 
         if (!projectMetadata && !stats) {
-            return res.status(400).json({ error: "projectMetadata or stats are required." });
+            return res.status(400).json({ error: "projectMetadata and stats are required." });
         }
 
-        // Check cache
         if (repoKey) {
             const cached = getCache(repoKey, "summary");
             if (cached) return res.json(cached);
         }
 
-        // Build structured context for the LLM
         const contextParts = [];
 
         if (projectMetadata?.readme) {
@@ -223,16 +201,13 @@ const getAISummary = async (req, res, next) => {
         if (repoKey) setCache(repoKey, "summary", result);
         res.json(result);
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
 const getAIOnbaording = async (req, res, next) => {
     try {
-        const { isAiConfigured, generateText } = require("./services/aiService");
-        const { getCache, setCache } = require("./services/cacheService");
-
         if (!isAiConfigured()) {
             return res.status(503).json({
                 error: "Gemini API key not found."
@@ -241,10 +216,9 @@ const getAIOnbaording = async (req, res, next) => {
 
         const { experience, goal, techFocus, projectMetadata, stats, metrics, repoKey } = req.body;
 
-        // Check cache
-        const cacheKey = `onboarding_${experience}_${goal}_${techFocus}`;
+        const featureKey = `onboarding_${experience}_${goal}_${techFocus}`;
         if (repoKey) {
-            const cached = getCache(repoKey, cacheKey);
+            const cached = getCache(repoKey, featureKey);
             if (cached) return res.json(cached);
         }
 
@@ -252,15 +226,10 @@ const getAIOnbaording = async (req, res, next) => {
             return res.status(400).json({ error: "experience, goal, and techFocus are required." });
         }
 
-        // Build context sections
-        const readme = projectMetadata?.readme
-            ? projectMetadata.readme.slice(0, 4000)
-            : "No README available.";
+        const readme = (projectMetadata?.readme) ? projectMetadata.readme: "No README available.";
 
         const pkg = projectMetadata?.packageJson;
-        const dependencies = pkg
-            ? `${(pkg.dependencies || []).join(", ") || "None"}`
-            : "Not available";
+        const dependencies = (pkg) ? `${(pkg.dependencies || []).join(", ") || "None"}` : "Not available";
 
         const totalNodes = stats?.totalNodes ?? "N/A";
         const totalEdges = stats?.totalEdges ?? "N/A";
@@ -311,18 +280,16 @@ Please structure the markdown guide into these exact sections:
         });
 
         const result = { guide };
-        if (repoKey) setCache(repoKey, cacheKey, result);
+        if (repoKey) setCache(repoKey, featureKey, result);
         res.json(result);
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
 const getAIChat = async (req, res, next) => {
     try {
-        const { isAiConfigured, generateText } = require("./services/aiService");
-
         if (!isAiConfigured()) {
             return res.status(503).json({
                 error: "Gemini API key not found."
@@ -335,47 +302,39 @@ const getAIChat = async (req, res, next) => {
             return res.status(400).json({ error: "messages array is required." });
         }
 
-        // Build compact codebase context for the system instruction
         const contextParts = [];
 
-        // README
         if (projectMetadata?.readme) {
             contextParts.push(`## README\n${projectMetadata.readme.slice(0, 3000)}`);
         }
 
-        // Dependencies
         const pkg = projectMetadata?.packageJson;
         if (pkg) {
             contextParts.push(`## Dependencies\n${(pkg.dependencies || []).join(", ") || "None"}`);
         }
 
-        // File list
         if (graph?.nodes && Array.isArray(graph.nodes)) {
             const fileList = graph.nodes
-                .slice(0, 100) // cap to avoid token overflow
+                .slice(0, 100)
                 .map(n => n.id)
                 .join("\n");
             contextParts.push(`## File Paths (${graph.nodes.length} total)\n${fileList}${graph.nodes.length > 100 ? `\n... and ${graph.nodes.length - 100} more` : ""}`);
         }
 
-        // Stats
         if (stats) {
             contextParts.push(`## Stats\n- Files: ${stats.totalNodes || "N/A"}\n- Dependencies: ${stats.totalEdges || "N/A"}\n- Avg degree: ${stats.avgDegree || "N/A"}`);
         }
 
-        // Code quality
         if (metrics?.codeQuality?.summary) {
             const cq = metrics.codeQuality.summary;
             contextParts.push(`## Code Quality\n- Score: ${cq.overallQualityScore}/100 (${cq.rating}, Grade ${cq.grade})`);
         }
 
-        // Architectural health
         if (metrics?.architecturalHealth) {
             const ah = metrics.architecturalHealth;
             contextParts.push(`## Architectural Health\n- Score: ${ah.score}/100 (${ah.label})`);
         }
 
-        // Hotspots
         const topHotspots = (metrics?.hotspots?.files || [])
             .slice(0, 5)
             .map(h => `${h.file || h.id} (score: ${h.hotspotScore ?? "?"})`)
@@ -384,7 +343,6 @@ const getAIChat = async (req, res, next) => {
             contextParts.push(`## Top Hotspots\n${topHotspots}`);
         }
 
-        // Cycles
         if (metrics?.cycles && metrics.cycles.length > 0) {
             contextParts.push(`## Circular Dependencies\n${metrics.cycles.length} cycle(s) detected.`);
         }
@@ -397,16 +355,12 @@ const getAIChat = async (req, res, next) => {
 ${codebaseContext}
 --- END CONTEXT ---`;
 
-        // Extract latest user message text to use as prompt
         const lastUserMsg = messages[messages.length - 1];
         const prompt = lastUserMsg?.parts?.[0]?.text || lastUserMsg?.text || "";
 
-        // Build conversation history (excluding the last message which becomes the prompt)
         const history = messages.slice(0, -1).map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.parts?.[0]?.text || m.text || ""}`).join("\n\n");
 
-        const fullPrompt = history
-            ? `Previous conversation:\n${history}\n\nUser: ${prompt}`
-            : prompt;
+        const fullPrompt = (history) ? `Previous conversation:\n${history}\n\nUser: ${prompt}` : prompt;
 
         const reply = await generateText(fullPrompt, systemInstruction, {
             temperature: 0.4,
@@ -415,16 +369,13 @@ ${codebaseContext}
 
         res.json({ reply });
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
 const getAIDocs = async (req, res, next) => {
     try {
-        const { isAiConfigured, generateText } = require("./services/aiService");
-        const { getCache, setCache } = require("./services/cacheService");
-
         if (!isAiConfigured()) {
             return res.status(503).json({
                 error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
@@ -433,10 +384,9 @@ const getAIDocs = async (req, res, next) => {
 
         const { section, projectMetadata, stats, metrics, graph, repoKey } = req.body;
 
-        // Check cache
-        const docsCacheKey = `docs_${section}`;
+        const featureKey = `docs_${section}`;
         if (repoKey) {
-            const cached = getCache(repoKey, docsCacheKey);
+            const cached = getCache(repoKey, featureKey);
             if (cached) return res.json(cached);
         }
 
@@ -444,25 +394,17 @@ const getAIDocs = async (req, res, next) => {
             return res.status(400).json({ error: "section parameter is required." });
         }
 
-        const readme = projectMetadata?.readme
-            ? projectMetadata.readme.slice(0, 4000)
-            : "No README available.";
+        const readme = (projectMetadata?.readme) ? projectMetadata.readme.slice(0, 4000) : "No README available.";
 
         const pkg = projectMetadata?.packageJson;
-        const packageDependencies = pkg
-            ? `${(pkg.dependencies || []).join(", ") || "None"}`
-            : "Not available";
+        const packageDependencies = (pkg) ? `${(pkg.dependencies || []).join(", ") || "None"}` : "Not available";
 
-        const scripts = pkg && pkg.scripts
-            ? `${(pkg.scripts || []).join(", ") || "None"}`
-            : "Not available";
+        const scripts = (pkg && pkg.scripts) ? `${(pkg.scripts || []).join(", ") || "None"}` : "Not available";
 
         const totalNodes = stats?.totalNodes ?? "N/A";
         const totalEdges = stats?.totalEdges ?? "N/A";
 
-        const filePaths = (graph?.nodes && Array.isArray(graph.nodes))
-            ? graph.nodes.slice(0, 100).map(n => n.id).join("\n")
-            : "N/A";
+        const filePaths = (graph?.nodes && Array.isArray(graph.nodes)) ? graph.nodes.slice(0, 100).map(n => n.id).join("\n") : "N/A";
 
         const couplingDensity = metrics?.couplingDensity?.density ?? "N/A";
         const cyclesCount = metrics?.cycles ? metrics.cycles.length : 0;
@@ -497,7 +439,9 @@ Please structure the document with the following headers:
 *(Explain the architectural style, e.g., Layered, MVC, Client-Server, Modular, or Monolithic, based on the file layout)*
 ## 3. Critical Entry Points
 *(Identify the key files that boot/start the application or orchestrate the main flows)*`;
-        } else if (section === "dependencies") {
+        }
+        
+        else if (section === "dependencies") {
             prompt = `Generate a comprehensive **Dependency & Data Flow** documentation for this repository.
 
 Developer context and metrics:
@@ -515,7 +459,9 @@ Please structure the document with the following headers:
 *(Evaluate the coupling density. Explain why the top hotspots are highly coupled and their impact on change ripple effects)*
 ## 3. Circular Dependencies
 *(List/explain any circular dependency cycles found, or confirm if the codebase is cleanly acyclic)*`;
-        } else if (section === "setup") {
+        }
+        
+        else if (section === "setup") {
             prompt = `Generate a comprehensive **Quick-Start & Setup Guide** for this repository.
 
 Developer context:
@@ -532,7 +478,9 @@ Please structure the document with the following headers:
 *(Write a step-by-step developer setup checklist to download dependencies, build the project, and run it locally)*
 ## 3. Command Scripts Dictionary
 *(Explain the purpose and usage of all available package/command scripts)*`;
-        } else if (section === "api") {
+        }
+        
+        else if (section === "api") {
             prompt = `Generate a comprehensive **API & Integration Map** for this repository.
 
 Developer context:
@@ -548,7 +496,9 @@ Please structure the document with the following headers:
 *(Map how a client request is handled, from the entry port/server down to the controllers and response output)*
 ## 3. Integration Guidelines
 *(Document how external clients or other modules should interface with this project)*`;
-        } else if (section === "readme") {
+        }
+        
+        else if (section === "readme") {
             prompt = `Generate a clean, professional, and ready-to-use **README.md** summarizing this repository in brief.
 
 Developer context and metrics:
@@ -568,8 +518,9 @@ Please structure the document with the following headers:
 *(List the main languages, frameworks, and database packages identified)*
 ## 4. Architectural Summary
 *(Provide a high-level overview of the directory layout and system architecture)*`;
-        } else {
-            return res.status(400).json({ error: "Invalid section parameter specified." });
+        }
+        else {
+            return res.status(400).json({ error: "Invalid section parameter." });
         }
 
         const markdown = await generateText(prompt, systemInstruction, {
@@ -578,19 +529,16 @@ Please structure the document with the following headers:
         });
 
         const docsResult = { markdown };
-        if (repoKey) setCache(repoKey, docsCacheKey, docsResult);
+        if (repoKey) setCache(repoKey, featureKey, docsResult);
         res.json(docsResult);
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
 const getAIArchInsights = async (req, res, next) => {
     try {
-        const { isAiConfigured, generateJSON } = require("./services/aiService");
-        const { getCache, setCache } = require("./services/cacheService");
-
         if (!isAiConfigured()) {
             return res.status(503).json({
                 error: "AI service is not configured. Set GEMINI_API_KEY in your backend .env file."
@@ -599,24 +547,17 @@ const getAIArchInsights = async (req, res, next) => {
 
         const { projectMetadata, stats, graph, repoKey } = req.body;
 
-        // Check cache
         if (repoKey) {
             const cached = getCache(repoKey, "architecture-insights");
             if (cached) return res.json(cached);
         }
 
-        const readme = projectMetadata?.readme
-            ? projectMetadata.readme.slice(0, 3000)
-            : "No README available.";
+        const readme = (projectMetadata?.readme) ? projectMetadata.readme.slice(0, 3000) : "No README available.";
 
         const pkg = projectMetadata?.packageJson;
-        const packageDeps = pkg
-            ? `${(pkg.dependencies || []).join(", ") || "None"}`
-            : "Not available";
+        const packageDeps = (pkg) ? `${(pkg.dependencies || []).join(", ") || "None"}` : "Not available";
 
-        const filePaths = (graph?.nodes && Array.isArray(graph.nodes))
-            ? graph.nodes.slice(0, 120).map(n => n.id).join("\n")
-            : "N/A";
+        const filePaths = (graph?.nodes && Array.isArray(graph.nodes)) ? graph.nodes.slice(0, 120).map(n => n.id).join("\n") : "N/A";
 
         const totalFiles = stats?.totalNodes ?? "N/A";
         const totalEdges = stats?.totalEdges ?? "N/A";
@@ -690,8 +631,8 @@ ${filePaths}`;
         if (repoKey) setCache(repoKey, "architecture-insights", result);
         res.json(result);
     }
-    catch (err) {
-        next(err);
+    catch (error) {
+        next(error);
     }
 };
 
