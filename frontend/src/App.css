@@ -28,17 +28,17 @@
   --warning-code-bg: #fef3c7;
   --warning-pre-bg: #fefce8;
 
-  /* Status: Error (red — only for actual errors/warnings) */
+  /* Status: Error */
   --error-bg: #fef2f2;
   --error-border: #fca5a5;
   --error-text: #991b1b;
 
-  /* Status: Info (neutral gray) */
+  /* Status: Info */
   --info-bg: #f3f4f6;
   --info-border: #e5e7eb;
   --info-text: #374151;
 
-  /* Status: Success (blue) */
+  /* Status: Success */
   --success-bg: #eff6ff;
   --success-border: #bfdbfe;
   --success-text: #1e40af;
