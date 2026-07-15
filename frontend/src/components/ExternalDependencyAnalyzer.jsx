@@ -10,8 +10,8 @@ export default function ExternalDependencyAnalyzer({ externalDeps }) {
   const { summary, used, unused, undeclared, builtins } = externalDeps;
 
   return (
-    <div className="card">
-      <h3 className="title">External Dependency Risk Evaluator</h3>
+    <div className="feature-card">
+      <h3 className="feature-card-title">External Dependency Risk Evaluator</h3>
       <p className="text-muted" style={{ fontSize: "0.875rem", marginBottom: "1.5rem" }}>
         Audit your third-party packages to find unused libraries, undeclared dependencies, and core package usage across your repository.
       </p>
@@ -22,21 +22,21 @@ export default function ExternalDependencyAnalyzer({ externalDeps }) {
           <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>DECLARED</span>
           <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#111827" }}>{summary.declaredCount}</span>
         </div>
-        <div style={{ padding: "1rem", backgroundColor: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: "6px", textAlign: "center" }}>
+        <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px", textAlign: "center" }}>
           <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>USED</span>
-          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#065f46" }}>{summary.usedCount}</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#111827" }}>{summary.usedCount}</span>
         </div>
-        <div style={{ padding: "1rem", backgroundColor: "#fef2f2", border: "1px solid #fecaca", borderRadius: "6px", textAlign: "center" }}>
+        <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px", textAlign: "center" }}>
           <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>UNUSED</span>
-          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#991b1b" }}>{summary.unusedCount}</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#111827" }}>{summary.unusedCount}</span>
         </div>
-        <div style={{ padding: "1rem", backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", textAlign: "center" }}>
+        <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px", textAlign: "center" }}>
           <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>UNDECLARED</span>
-          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#92400e" }}>{summary.undeclaredCount}</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#111827" }}>{summary.undeclaredCount}</span>
         </div>
-        <div style={{ padding: "1rem", backgroundColor: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: "6px", textAlign: "center" }}>
+        <div style={{ padding: "1rem", backgroundColor: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "6px", textAlign: "center" }}>
           <span className="text-muted" style={{ display: "block", fontSize: "0.75rem", marginBottom: "0.25rem" }}>NODE BUILT-INS</span>
-          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#4b5563" }}>{summary.builtinCount}</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: "600", color: "#111827" }}>{summary.builtinCount}</span>
         </div>
       </div>
 

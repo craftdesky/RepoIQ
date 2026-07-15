@@ -4,14 +4,15 @@ const gradeColors = {
   A: '#10b981',
   B: '#3b82f6',
   C: '#f59e0b',
-  D: '#ef4444',
+  D: '#ea580c',
   F: '#ef4444',
 };
 
 function getBarColor(score) {
-  if (score >= 70) return '#10b981';
-  if (score >= 40) return '#f59e0b';
-  return '#ef4444';
+  if (score >= 80) return '#232322';
+  if (score >= 60) return '#52514E';
+  if (score >= 40) return '#878682';
+  return '#B5B3AD';
 }
 
 function capitalize(str) {
@@ -36,7 +37,7 @@ function CodeQualityCard({ codeQuality }) {
 
   if (!codeQuality) {
     return (
-      <div style={styles.card}>
+      <div className="feature-card">
         <div style={styles.nullState}>
           <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.35 }}>📊</div>
           <span className="text-muted" style={{ fontSize: 14 }}>
@@ -50,7 +51,7 @@ function CodeQualityCard({ codeQuality }) {
   const { summary, strengths, weaknesses } = codeQuality;
 
   return (
-    <div style={styles.card}>
+    <div className="feature-card">
       {/* Header */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
@@ -63,8 +64,8 @@ function CodeQualityCard({ codeQuality }) {
             {summary.grade}
           </div>
           <div style={styles.headerText}>
-            <div style={styles.score}>{summary.overallQualityScore}</div>
-            <div className="text-muted" style={styles.rating}>
+            <div style={{ ...styles.score, color: gradeColor }}>{summary.overallQualityScore}</div>
+            <div style={{ ...styles.rating, color: gradeColor, fontWeight: 600 }}>
               {summary.rating}
             </div>
           </div>
@@ -73,7 +74,7 @@ function CodeQualityCard({ codeQuality }) {
 
       {/* Breakdown */}
       <div style={styles.section}>
-        <div style={styles.sectionTitle}>Quality Breakdown</div>
+        <div className="form-label">Quality Breakdown</div>
         <div style={styles.breakdownList}>
           {breakdownEntries.map((entry) => (
             <div key={entry.name} style={styles.breakdownRow}>
@@ -136,12 +137,6 @@ function CodeQualityCard({ codeQuality }) {
 }
 
 const styles = {
-  card: {
-    backgroundColor: '#fff',
-    border: '1px solid #e5e7eb',
-    borderRadius: 8,
-    padding: '1.5rem',
-  },
   nullState: {
     display: 'flex',
     flexDirection: 'column',
@@ -188,14 +183,6 @@ const styles = {
   },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-    color: '#6b7280',
-    marginBottom: 12,
   },
   breakdownList: {
     display: 'flex',

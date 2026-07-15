@@ -28,6 +28,7 @@ export default function CouplingDensityGauge({ density = 0, size = 140 }) {
               outerRadius={size / 2 - 6}
               paddingAngle={0}
               cornerRadius={8}
+              isAnimationActive={false}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index]} />

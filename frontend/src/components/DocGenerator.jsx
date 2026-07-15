@@ -12,7 +12,7 @@ function inlineFormat(text) {
     const token = match[0];
     if (token.startsWith("`")) {
       parts.push(
-        <code key={parts.length} style={{ backgroundColor: "#f5f5f4", padding: "0.125rem 0.375rem", borderRadius: "3px", fontSize: "0.8125rem", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>
+        <code key={parts.length}>
           {token.slice(1, -1)}
         </code>
       );
@@ -40,21 +40,21 @@ function renderMarkdown(md) {
       while (i < lines.length && !lines[i].trim().startsWith("```")) { codeLines.push(lines[i]); i++; }
       i++;
       elements.push(
-        <pre key={elements.length} style={{ backgroundColor: "#1f2937", color: "#e5e7eb", border: "1px solid #374151", borderRadius: "6px", padding: "1rem", fontSize: "0.8125rem", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", overflowX: "auto", margin: "0.75rem 0" }}>
+        <pre key={elements.length}>
           <code>{codeLines.join("\n")}</code>
         </pre>
       );
       continue;
     }
-    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length} style={{ margin: "1.25rem 0 0.4rem", fontSize: "0.9375rem", fontWeight: 600, color: "#37352F" }}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
-    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.0625rem", fontWeight: 600, color: "#37352F" }}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
-    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.25rem", fontWeight: 700, color: "#37352F" }}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
+    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
+    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
+    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
     if (/^\d+\.\s/.test(line.trim())) {
       const items = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s/, "")); i++; }
       elements.push(
-        <ol key={elements.length} style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", lineHeight: 1.7 }}>
-          {items.map((item, idx) => <li key={idx} style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.25rem" }}>{inlineFormat(item)}</li>)}
+        <ol key={elements.length}>
+          {items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}
         </ol>
       );
       continue;
@@ -63,14 +63,14 @@ function renderMarkdown(md) {
       const items = [];
       while (i < lines.length && /^[\-\*]\s/.test(lines[i].trim())) { items.push(lines[i].trim().slice(2)); i++; }
       elements.push(
-        <ul key={elements.length} style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", lineHeight: 1.7 }}>
-          {items.map((item, idx) => <li key={idx} style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.25rem" }}>{inlineFormat(item)}</li>)}
+        <ul key={elements.length}>
+          {items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}
         </ul>
       );
       continue;
     }
     if (line.trim() === "") { i++; continue; }
-    elements.push(<p key={elements.length} style={{ margin: "0.5rem 0", fontSize: "0.875rem", lineHeight: 1.7, color: "#374151" }}>{inlineFormat(line)}</p>);
+    elements.push(<p key={elements.length}>{inlineFormat(line)}</p>);
     i++;
   }
   return elements;
@@ -151,12 +151,12 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
 
   if (aiConfigured === false) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Documentation generator</h3>
-        <div style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", padding: "1rem 1.25rem", marginTop: "1rem" }}>
+      <div className="feature-card">
+        <h3 className="feature-card-title">Documentation generator</h3>
+        <div className="alert-warning">
           <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>Gemini API Key Required</p>
           <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#78350f", lineHeight: 1.6 }}>
-            Add your API key to <code style={{ backgroundColor: "#fef3c7", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>backend/.env</code> and restart the server.
+            Add your API key to <code>backend/.env</code> and restart the server.
           </p>
         </div>
       </div>
@@ -166,11 +166,11 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
   const currentMarkdown = docs[activeSection];
 
   return (
-    <div style={cardStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+    <div className="feature-card">
+      <div className="feature-card-header">
         <div>
-          <h3 style={{ ...titleStyle, margin: 0 }}>Documentation generator</h3>
-          <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem", color: "#6b7280" }}>
+          <h3 className="feature-card-title" style={{ margin: 0 }}>Documentation generator</h3>
+          <p className="feature-card-subtitle">
             Generate publication-quality Markdown documentation tailored to your codebase structure.
           </p>
         </div>
@@ -178,14 +178,14 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={() => downloadMarkdown(activeSection)}
-              style={downloadBtnStyle}
+              className="btn-primary"
             >
               ↓ Download Markdown
             </button>
             <button
               onClick={() => generateDoc(activeSection)}
               disabled={loading}
-              style={regenerateBtnStyle}
+              className="btn-secondary"
             >
               ↻ Regenerate
             </button>
@@ -202,17 +202,7 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
               setActiveSection(sec.id);
               setError(null);
             }}
-            style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "6px",
-              border: activeSection === sec.id ? "1px solid #232322" : "1px solid #d1d5db",
-              backgroundColor: activeSection === sec.id ? "#232322" : "#fff",
-              color: activeSection === sec.id ? "#fff" : "#374151",
-              fontSize: "0.8125rem",
-              fontWeight: activeSection === sec.id ? 600 : 400,
-              cursor: "pointer",
-              transition: "all 0.15s ease"
-            }}
+            className={activeSection === sec.id ? "btn-primary" : "btn-secondary"}
           >
             {sec.label}
           </button>
@@ -221,16 +211,16 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
 
       {/* Loading */}
       {loading && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "3rem 0", color: "#6b7280", justifyContent: "center" }}>
+        <div className="loading-row" style={{ padding: "3rem 0", justifyContent: "center" }}>
           <Spinner />
-          <span style={{ fontSize: "0.875rem" }}>Generating comprehensive Markdown documentation with Gemini…</span>
+          <span>Generating comprehensive Markdown documentation with Gemini…</span>
         </div>
       )}
 
       {/* Error */}
       {error && !loading && (
-        <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px", padding: "1rem" }}>
-          <p style={{ margin: 0, fontSize: "0.875rem", color: "#991b1b" }}>{error}</p>
+        <div className="alert-error">
+          <p style={{ margin: 0 }}>{error}</p>
         </div>
       )}
 
@@ -246,16 +236,7 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
           </p>
           <button
             onClick={() => generateDoc(activeSection)}
-            style={{
-              backgroundColor: "#232322",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              padding: "0.625rem 1.5rem",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              cursor: "pointer"
-            }}
+            className="btn-primary"
           >
             Generate Documentation
           </button>
@@ -264,7 +245,7 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
 
       {/* Rendered Markdown */}
       {currentMarkdown && !loading && (
-        <div style={{ lineHeight: 1.7, backgroundColor: "#fff", padding: "1.5rem", border: "1px solid #e5e7eb", borderRadius: "6px" }}>
+        <div className="md-render">
           {renderMarkdown(currentMarkdown)}
         </div>
       )}
@@ -274,33 +255,9 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
 
 function Spinner() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spinner-icon">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }
 
-const cardStyle = { backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "1.5rem" };
-const titleStyle = { margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600, color: "#37352F" };
-
-const downloadBtnStyle = {
-  backgroundColor: "#232322",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  padding: "0.4rem 0.875rem",
-  fontSize: "0.75rem",
-  fontWeight: 600,
-  cursor: "pointer"
-};
-
-const regenerateBtnStyle = {
-  background: "none",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  padding: "0.4rem 0.875rem",
-  fontSize: "0.75rem",
-  color: "#6b7280",
-  cursor: "pointer"
-};

@@ -12,7 +12,7 @@ function inlineFormat(text) {
     const token = match[0];
     if (token.startsWith("`")) {
       parts.push(
-        <code key={parts.length} style={{ backgroundColor: "#f5f5f4", padding: "0.125rem 0.375rem", borderRadius: "3px", fontSize: "0.8125rem", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" }}>
+        <code key={parts.length}>
           {token.slice(1, -1)}
         </code>
       );
@@ -40,21 +40,21 @@ function renderMarkdown(md) {
       while (i < lines.length && !lines[i].trim().startsWith("```")) { codeLines.push(lines[i]); i++; }
       i++;
       elements.push(
-        <pre key={elements.length} style={{ backgroundColor: "#f5f5f4", border: "1px solid #e5e7eb", borderRadius: "6px", padding: "1rem", fontSize: "0.8125rem", fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace", overflowX: "auto", margin: "0.75rem 0" }}>
+        <pre key={elements.length}>
           <code>{codeLines.join("\n")}</code>
         </pre>
       );
       continue;
     }
-    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length} style={{ margin: "1.25rem 0 0.4rem", fontSize: "0.9375rem", fontWeight: 600, color: "#37352F" }}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
-    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.0625rem", fontWeight: 600, color: "#37352F" }}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
-    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.25rem", fontWeight: 700, color: "#37352F" }}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
+    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
+    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
+    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
     if (/^\d+\.\s/.test(line.trim())) {
       const items = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s/, "")); i++; }
       elements.push(
-        <ol key={elements.length} style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", lineHeight: 1.7 }}>
-          {items.map((item, idx) => <li key={idx} style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.25rem" }}>{inlineFormat(item)}</li>)}
+        <ol key={elements.length}>
+          {items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}
         </ol>
       );
       continue;
@@ -63,14 +63,14 @@ function renderMarkdown(md) {
       const items = [];
       while (i < lines.length && /^[\-\*]\s/.test(lines[i].trim())) { items.push(lines[i].trim().slice(2)); i++; }
       elements.push(
-        <ul key={elements.length} style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", lineHeight: 1.7 }}>
-          {items.map((item, idx) => <li key={idx} style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.25rem" }}>{inlineFormat(item)}</li>)}
+        <ul key={elements.length}>
+          {items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}
         </ul>
       );
       continue;
     }
     if (line.trim() === "") { i++; continue; }
-    elements.push(<p key={elements.length} style={{ margin: "0.5rem 0", fontSize: "0.875rem", lineHeight: 1.7, color: "#374151" }}>{inlineFormat(line)}</p>);
+    elements.push(<p key={elements.length}>{inlineFormat(line)}</p>);
     i++;
   }
   return elements;
@@ -129,14 +129,14 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
   // ── AI not configured ────────────────────────────────────────────────────
   if (aiConfigured === false) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Onboarding Assistant</h3>
-        <div style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", padding: "1rem 1.25rem", marginTop: "1rem" }}>
-          <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>Gemini API Key Required</p>
-          <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#78350f", lineHeight: 1.6 }}>
-            Add your API key to <code style={{ backgroundColor: "#fef3c7", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>backend/.env</code>:
+      <div className="feature-card">
+        <h3 className="feature-card-title">Onboarding Assistant</h3>
+        <div className="alert-warning" style={{ marginTop: "1rem" }}>
+          <p style={{ margin: 0, fontWeight: 600 }}>Gemini API Key Required</p>
+          <p style={{ margin: "0.5rem 0 0" }}>
+            Add your API key to <code>backend/.env</code>:
           </p>
-          <pre style={{ backgroundColor: "#fefce8", border: "1px solid #fde68a", borderRadius: "4px", padding: "0.75rem", fontSize: "0.8125rem", fontFamily: "ui-monospace, monospace", marginTop: "0.5rem", color: "#78350f" }}>
+          <pre>
             GEMINI_API_KEY=your_api_key_here
           </pre>
         </div>
@@ -144,55 +144,38 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
     );
   }
 
-  const selectStyle = {
-    width: "100%",
-    padding: "0.5rem 0.75rem",
-    borderRadius: "6px",
-    border: "1px solid #d1d5db",
-    fontSize: "0.875rem",
-    color: "#37352F",
-    backgroundColor: "#fff",
-    cursor: "pointer",
-    outline: "none",
-    appearance: "none",
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 0.75rem center",
-    paddingRight: "2rem"
-  };
 
-  const labelStyle = { fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "0.375rem" };
 
   return (
-    <div style={cardStyle}>
-      <h3 style={titleStyle}>Onboarding Assistant</h3>
-      <p style={{ fontSize: "0.875rem", color: "#6b7280", margin: "0 0 1.5rem" }}>
+    <div className="feature-card">
+      <h3 className="feature-card-title">Onboarding Assistant</h3>
+      <p className="feature-card-subtitle">
         Tell us about yourself and we'll generate a personalized guide to help you navigate this codebase.
       </p>
 
       {/* Form */}
       <form onSubmit={handleGenerate}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
+        <div className="stat-grid stat-grid-3" style={{ marginBottom: "1.25rem" }}>
           {/* Experience */}
           <div>
-            <label style={labelStyle}>Experience Level</label>
-            <select value={experience} onChange={e => setExperience(e.target.value)} style={selectStyle}>
+            <label className="form-label">Experience Level</label>
+            <select value={experience} onChange={e => setExperience(e.target.value)} className="form-control">
               {EXPERIENCE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
           </div>
 
           {/* Goal */}
           <div>
-            <label style={labelStyle}>Onboarding Goal</label>
-            <select value={goal} onChange={e => setGoal(e.target.value)} style={selectStyle}>
+            <label className="form-label">Onboarding Goal</label>
+            <select value={goal} onChange={e => setGoal(e.target.value)} className="form-control">
               {GOAL_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
           </div>
 
           {/* Tech Focus */}
           <div>
-            <label style={labelStyle}>Primary Tech Focus</label>
-            <select value={techFocus} onChange={e => setTechFocus(e.target.value)} style={selectStyle}>
+            <label className="form-label">Primary Tech Focus</label>
+            <select value={techFocus} onChange={e => setTechFocus(e.target.value)} className="form-control">
               {TECH_FOCUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
           </div>
@@ -201,20 +184,7 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
         <button
           type="submit"
           disabled={loading || aiConfigured === null}
-          style={{
-            backgroundColor: loading ? "#9ca3af" : "#232322",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            padding: "0.625rem 1.5rem",
-            fontSize: "0.875rem",
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            transition: "background-color 0.15s ease"
-          }}
+          className="btn-primary"
         >
           {loading && <Spinner />}
           {loading ? "Generating Guide…" : "Generate Onboarding Guide"}
@@ -223,27 +193,27 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
 
       {/* Divider */}
       {(guide || error || loading) && (
-        <div style={{ borderTop: "1px solid #e5e7eb", margin: "1.5rem 0" }} />
+        <hr className="divider" />
       )}
 
       {/* Loading */}
       {loading && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#6b7280" }}>
+        <div className="loading-row">
           <Spinner />
-          <span style={{ fontSize: "0.875rem" }}>Generating your personalized guide with Gemini…</span>
+          <span>Generating your personalized guide with Gemini…</span>
         </div>
       )}
 
       {/* Error */}
       {error && !loading && (
-        <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px", padding: "1rem" }}>
-          <p style={{ margin: 0, fontSize: "0.875rem", color: "#991b1b" }}>{error}</p>
+        <div className="alert-error">
+          <p style={{ margin: 0 }}>{error}</p>
         </div>
       )}
 
       {/* Result */}
       {guide && !loading && (
-        <div style={{ lineHeight: 1.7 }}>
+        <div className="md-render">
           {renderMarkdown(guide)}
         </div>
       )}
@@ -253,23 +223,9 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
 
 function Spinner() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spinner-icon">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }
 
-const cardStyle = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #e5e7eb",
-  borderRadius: "8px",
-  padding: "1.5rem"
-};
-
-const titleStyle = {
-  margin: "0 0 0.5rem",
-  fontSize: "1.125rem",
-  fontWeight: 600,
-  color: "#37352F"
-};

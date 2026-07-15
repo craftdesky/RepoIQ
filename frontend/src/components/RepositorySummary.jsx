@@ -25,19 +25,7 @@ function renderMarkdown(md) {
       }
       i++; // skip closing ```
       elements.push(
-        <pre
-          key={elements.length}
-          style={{
-            backgroundColor: "#f5f5f4",
-            border: "1px solid #e5e7eb",
-            borderRadius: "6px",
-            padding: "1rem",
-            fontSize: "0.8125rem",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            overflowX: "auto",
-            margin: "0.75rem 0"
-          }}
-        >
+        <pre key={elements.length}>
           <code>{codeLines.join("\n")}</code>
         </pre>
       );
@@ -47,7 +35,7 @@ function renderMarkdown(md) {
     // Headings
     if (line.startsWith("### ")) {
       elements.push(
-        <h4 key={elements.length} style={{ margin: "1.25rem 0 0.5rem", fontSize: "0.9375rem", fontWeight: 600, color: "#37352F" }}>
+        <h4 key={elements.length}>
           {inlineFormat(line.slice(4))}
         </h4>
       );
@@ -56,7 +44,7 @@ function renderMarkdown(md) {
     }
     if (line.startsWith("## ")) {
       elements.push(
-        <h3 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.0625rem", fontWeight: 600, color: "#37352F" }}>
+        <h3 key={elements.length}>
           {inlineFormat(line.slice(3))}
         </h3>
       );
@@ -65,7 +53,7 @@ function renderMarkdown(md) {
     }
     if (line.startsWith("# ")) {
       elements.push(
-        <h2 key={elements.length} style={{ margin: "1.5rem 0 0.5rem", fontSize: "1.25rem", fontWeight: 700, color: "#37352F" }}>
+        <h2 key={elements.length}>
           {inlineFormat(line.slice(2))}
         </h2>
       );
@@ -81,9 +69,9 @@ function renderMarkdown(md) {
         i++;
       }
       elements.push(
-        <ul key={elements.length} style={{ margin: "0.5rem 0", paddingLeft: "1.5rem", lineHeight: 1.7 }}>
+        <ul key={elements.length}>
           {items.map((item, idx) => (
-            <li key={idx} style={{ fontSize: "0.875rem", color: "#374151", marginBottom: "0.25rem" }}>
+            <li key={idx}>
               {inlineFormat(item)}
             </li>
           ))}
@@ -100,7 +88,7 @@ function renderMarkdown(md) {
 
     // Paragraph
     elements.push(
-      <p key={elements.length} style={{ margin: "0.5rem 0", fontSize: "0.875rem", lineHeight: 1.7, color: "#374151" }}>
+      <p key={elements.length}>
         {inlineFormat(line)}
       </p>
     );
@@ -126,16 +114,7 @@ function inlineFormat(text) {
     const token = match[0];
     if (token.startsWith("`")) {
       parts.push(
-        <code
-          key={parts.length}
-          style={{
-            backgroundColor: "#f5f5f4",
-            padding: "0.125rem 0.375rem",
-            borderRadius: "3px",
-            fontSize: "0.8125rem",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-          }}
-        >
+        <code key={parts.length}>
           {token.slice(1, -1)}
         </code>
       );
@@ -206,10 +185,10 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
   // Still checking AI status
   if (aiConfigured === null) {
     return (
-      <div style={cardStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "#6b7280" }}>
+      <div className="feature-card">
+        <div className="loading-row">
           <Spinner />
-          <span style={{ fontSize: "0.875rem" }}>Checking AI service status…</span>
+          <span>Checking AI service status…</span>
         </div>
       </div>
     );
@@ -218,31 +197,16 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
   // AI not configured
   if (aiConfigured === false) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>AI Repository Summary</h3>
-        <div style={{
-          backgroundColor: "#fffbeb",
-          border: "1px solid #fde68a",
-          borderRadius: "6px",
-          padding: "1rem 1.25rem",
-          marginTop: "1rem"
-        }}>
+      <div className="feature-card">
+        <h3 className="feature-card-title">AI Repository Summary</h3>
+        <div className="alert-warning">
           <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>
             Gemini API Key Required
           </p>
           <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#78350f", lineHeight: 1.6 }}>
-            To use AI features, add your Google Gemini API key to the backend <code style={{ backgroundColor: "#fef3c7", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>.env</code> file:
+            To use AI features, add your Google Gemini API key to the backend <code>.env</code> file:
           </p>
-          <pre style={{
-            backgroundColor: "#fefce8",
-            border: "1px solid #fde68a",
-            borderRadius: "4px",
-            padding: "0.75rem",
-            fontSize: "0.8125rem",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-            marginTop: "0.5rem",
-            color: "#78350f"
-          }}>
+          <pre>
             GEMINI_API_KEY=your_api_key_here
           </pre>
           <p style={{ margin: "0.75rem 0 0", fontSize: "0.8125rem", color: "#78350f" }}>
@@ -254,23 +218,14 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
   }
 
   return (
-    <div style={cardStyle}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <h3 style={{ ...titleStyle, margin: 0 }}>AI Repository Summary</h3>
+    <div className="feature-card">
+      <div className="feature-card-header">
+        <h3 className="feature-card-title">AI Repository Summary</h3>
         {summary && (
           <button
             onClick={() => { hasFetched.current = false; setSummary(null); fetchSummary(); }}
             disabled={loading}
-            style={{
-              background: "none",
-              border: "1px solid #d1d5db",
-              borderRadius: "6px",
-              padding: "0.375rem 0.75rem",
-              fontSize: "0.75rem",
-              color: "#6b7280",
-              cursor: loading ? "not-allowed" : "pointer",
-              transition: "all 0.15s ease"
-            }}
+            className="btn-secondary"
           >
             ↻ Regenerate
           </button>
@@ -278,33 +233,18 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
       </div>
 
       {loading && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "2rem 0", color: "#6b7280" }}>
+        <div className="loading-row">
           <Spinner />
-          <span style={{ fontSize: "0.875rem" }}>Generating repository summary with Gemini…</span>
+          <span>Generating repository summary with Gemini…</span>
         </div>
       )}
 
       {error && !loading && (
-        <div style={{
-          backgroundColor: "#fef2f2",
-          border: "1px solid #fca5a5",
-          borderRadius: "6px",
-          padding: "1rem",
-          marginTop: "0.5rem"
-        }}>
+        <div className="alert-error">
           <p style={{ margin: 0, fontSize: "0.875rem", color: "#991b1b" }}>{error}</p>
           <button
             onClick={fetchSummary}
-            style={{
-              marginTop: "0.75rem",
-              background: "none",
-              border: "1px solid #fca5a5",
-              borderRadius: "4px",
-              padding: "0.375rem 0.75rem",
-              fontSize: "0.8125rem",
-              color: "#991b1b",
-              cursor: "pointer"
-            }}
+            className="btn-secondary"
           >
             Retry
           </button>
@@ -312,7 +252,7 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
       )}
 
       {summary && !loading && (
-        <div style={{ lineHeight: 1.7 }}>
+        <div className="md-render">
           {renderMarkdown(summary)}
         </div>
       )}
@@ -322,23 +262,8 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
 
 function Spinner() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spinner-icon">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }
-
-const cardStyle = {
-  backgroundColor: "#ffffff",
-  border: "1px solid #e5e7eb",
-  borderRadius: "8px",
-  padding: "1.5rem"
-};
-
-const titleStyle = {
-  margin: "0 0 1rem 0",
-  fontSize: "1.125rem",
-  fontWeight: 600,
-  color: "#37352F"
-};

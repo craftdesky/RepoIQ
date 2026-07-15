@@ -1,11 +1,25 @@
 import React, { useState, useMemo } from 'react';
 
 const LEVEL_COLORS = {
-  excellent: '#10b981',
-  good: '#3b82f6',
-  concerning: '#f59e0b',
-  critical: '#ef4444',
+  excellent: '#232322',
+  good: '#52514E',
+  concerning: '#878682',
+  critical: '#B5B3AD',
 };
+
+function getScoreColor(score) {
+  if (score >= 70) return '#232322';
+  if (score >= 50) return '#52514E';
+  if (score >= 35) return '#878682';
+  return '#B5B3AD';
+}
+
+function getHeaderColor(score) {
+  if (score >= 70) return '#10b981';
+  if (score >= 50) return '#3b82f6';
+  if (score >= 35) return '#f59e0b';
+  return '#ef4444';
+}
 
 const LEVEL_LABELS = {
   excellent: 'Excellent',
@@ -40,16 +54,7 @@ function MaintainabilityCard({ maintainability }) {
   const total = summary.totalFiles || 1;
 
   return (
-    <div
-      style={{
-        backgroundColor: '#fff',
-        border: '1px solid #e5e7eb',
-        borderRadius: 8,
-        padding: '1.5rem',
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-      }}
-    >
+    <div className="feature-card">
       {/* ── TOP SECTION ── */}
       <div
         style={{
@@ -64,13 +69,13 @@ function MaintainabilityCard({ maintainability }) {
             fontSize: 40,
             fontWeight: 700,
             lineHeight: 1,
-            color: summary.color,
+            color: getHeaderColor(summary.averageMaintainability),
           }}
         >
           {summary.averageMaintainability.toFixed(1)}
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#111827' }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: getHeaderColor(summary.averageMaintainability) }}>
             {summary.category}
           </span>
           <span className="text-muted" style={{ fontSize: 13 }}>
@@ -156,66 +161,17 @@ function MaintainabilityCard({ maintainability }) {
         placeholder="Search files…"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '8px 12px',
-          fontSize: 14,
-          border: '1px solid #e5e7eb',
-          borderRadius: 6,
-          outline: 'none',
-          marginBottom: 12,
-          boxSizing: 'border-box',
-          color: '#111827',
-        }}
+        className="form-control"
+        style={{ marginBottom: 12 }}
       />
 
       <div style={{ maxHeight: 350, overflowY: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: 14,
-          }}
-        >
+        <table className="data-table">
           <thead>
-            <tr
-              style={{
-                textAlign: 'left',
-                borderBottom: '2px solid #e5e7eb',
-                position: 'sticky',
-                top: 0,
-                backgroundColor: '#fff',
-              }}
-            >
-              <th
-                style={{
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  color: '#374151',
-                }}
-              >
-                File
-              </th>
-              <th
-                style={{
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  width: 100,
-                }}
-              >
-                MI Score
-              </th>
-              <th
-                style={{
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  color: '#374151',
-                  width: 150,
-                }}
-              >
-                Category
-              </th>
+            <tr>
+              <th>File</th>
+              <th style={{ width: 100 }}>MI Score</th>
+              <th style={{ width: 150 }}>Category</th>
             </tr>
           </thead>
           <tbody>
@@ -234,39 +190,20 @@ function MaintainabilityCard({ maintainability }) {
                   key={f.file}
                   onMouseEnter={() => setHoveredRow(idx)}
                   onMouseLeave={() => setHoveredRow(null)}
-                  style={{
-                    borderBottom: '1px solid #f3f4f6',
-                    backgroundColor:
-                      hoveredRow === idx ? '#f9fafb' : 'transparent',
-                    transition: 'background-color 0.2s ease',
-                    cursor: 'default',
-                  }}
                 >
-                  <td
-                    style={{
-                      padding: '8px 12px',
-                      color: '#111827',
-                      wordBreak: 'break-all',
-                    }}
-                  >
+                  <td style={{ wordBreak: 'break-all' }} className="mono">
                     {f.file}
                   </td>
                   <td
                     style={{
-                      padding: '8px 12px',
                       fontWeight: 600,
                       fontVariantNumeric: 'tabular-nums',
-                      color: f.color,
+                      color: getScoreColor(f.maintainabilityIndex),
                     }}
                   >
                     {f.maintainabilityIndex.toFixed(1)}
                   </td>
-                  <td
-                    style={{
-                      padding: '8px 12px',
-                      color: '#374151',
-                    }}
-                  >
+                  <td>
                     {f.category}
                   </td>
                 </tr>

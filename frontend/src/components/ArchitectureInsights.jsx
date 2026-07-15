@@ -71,12 +71,12 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
   // ── AI not configured ──────────────────────────────────────────────────
   if (aiConfigured === false) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Architecture Insights</h3>
-        <div style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", padding: "1rem 1.25rem", marginTop: "1rem" }}>
-          <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>Gemini API Key Required</p>
-          <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#78350f", lineHeight: 1.6 }}>
-            Add your API key to <code style={{ backgroundColor: "#fef3c7", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>backend/.env</code> and restart the server.
+      <div className="feature-card">
+        <h3 className="feature-card-title">Architecture Insights</h3>
+        <div className="alert-warning" style={{ marginTop: "1rem" }}>
+          <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600 }}>Gemini API Key Required</p>
+          <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", lineHeight: 1.6 }}>
+            Add your API key to <code>backend/.env</code> and restart the server.
           </p>
         </div>
       </div>
@@ -86,9 +86,9 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
   // ── Empty / Generate state ─────────────────────────────────────────────
   if (!data && !loading && !error) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Architecture Insights</h3>
-        <p style={{ fontSize: "0.8125rem", color: "#6b7280", margin: "0 0 1.5rem" }}>
+      <div className="feature-card">
+        <h3 className="feature-card-title">Architecture Insights</h3>
+        <p className="feature-card-subtitle">
           Automatically detect architectural patterns, classify files into logical layers, and map module responsibilities.
         </p>
         <div style={{ textAlign: "center", padding: "3rem 1.5rem", backgroundColor: "#fafafa", borderRadius: "8px", border: "1px dashed #d1d5db" }}>
@@ -97,7 +97,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
           <p style={{ margin: "0 0 1.25rem", fontSize: "0.8125rem", color: "#6b7280", maxWidth: "480px", marginLeft: "auto", marginRight: "auto" }}>
             Click below to let Gemini analyze your repository's file structure and classify its architecture.
           </p>
-          <button onClick={handleGenerate} style={primaryBtnStyle}>
+          <button onClick={handleGenerate} className="btn-primary">
             Generate Architecture Insights
           </button>
         </div>
@@ -108,9 +108,9 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
   // ── Loading ────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Architecture Insights</h3>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "3rem 0", color: "#6b7280", justifyContent: "center" }}>
+      <div className="feature-card">
+        <h3 className="feature-card-title">Architecture Insights</h3>
+        <div className="loading-row" style={{ padding: "3rem 0", justifyContent: "center" }}>
           <Spinner />
           <span style={{ fontSize: "0.875rem" }}>Analyzing repository architecture with Gemini…</span>
         </div>
@@ -121,12 +121,12 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
   // ── Error ──────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Architecture Insights</h3>
-        <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fca5a5", borderRadius: "6px", padding: "1rem", marginBottom: "1rem" }}>
-          <p style={{ margin: 0, fontSize: "0.875rem", color: "#991b1b" }}>{error}</p>
+      <div className="feature-card">
+        <h3 className="feature-card-title">Architecture Insights</h3>
+        <div className="alert-error">
+          <p style={{ margin: 0, fontSize: "0.875rem" }}>{error}</p>
         </div>
-        <button onClick={handleGenerate} style={primaryBtnStyle}>Retry</button>
+        <button onClick={handleGenerate} className="btn-primary">Retry</button>
       </div>
     );
   }
@@ -144,16 +144,16 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
     : responsibilities;
 
   return (
-    <div style={cardStyle}>
+    <div className="feature-card">
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+      <div className="feature-card-header" style={{ marginBottom: "1.5rem" }}>
         <div>
-          <h3 style={{ ...titleStyle, margin: 0 }}>Architecture Insights</h3>
+          <h3 className="feature-card-title" style={{ margin: 0 }}>Architecture Insights</h3>
           <p style={{ margin: "0.25rem 0 0", fontSize: "0.8125rem", color: "#6b7280" }}>
             AI-detected architectural patterns, layers, and module responsibilities.
           </p>
         </div>
-        <button onClick={handleGenerate} disabled={loading} style={regenerateBtnStyle}>
+        <button onClick={handleGenerate} disabled={loading} className="btn-secondary">
           ↻ Regenerate
         </button>
       </div>
@@ -278,7 +278,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
       {/* ── Module Responsibilities ───────────────────────────────────── */}
       {responsibilities && responsibilities.length > 0 && (
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+          <div className="feature-card-header" style={{ marginBottom: "0.75rem" }}>
             <h4 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#37352F", textTransform: "uppercase", letterSpacing: "0.04em" }}>
               Module Responsibilities ({responsibilities.length})
             </h4>
@@ -287,15 +287,8 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
               placeholder="Search files…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{
-                padding: "0.375rem 0.75rem",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                fontSize: "0.75rem",
-                width: "200px",
-                outline: "none",
-                color: "#37352F"
-              }}
+              className="form-control"
+              style={{ width: "200px", fontSize: "0.75rem" }}
             />
           </div>
           <div style={{ border: "1px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
@@ -374,33 +367,8 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
 
 function Spinner() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="spinner-icon">
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   );
 }
-
-const cardStyle = { backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "1.5rem" };
-const titleStyle = { margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600, color: "#37352F" };
-
-const primaryBtnStyle = {
-  backgroundColor: "#232322",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  padding: "0.625rem 1.5rem",
-  fontSize: "0.875rem",
-  fontWeight: 600,
-  cursor: "pointer"
-};
-
-const regenerateBtnStyle = {
-  background: "none",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  padding: "0.4rem 0.875rem",
-  fontSize: "0.75rem",
-  color: "#6b7280",
-  cursor: "pointer"
-};

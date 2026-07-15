@@ -109,17 +109,8 @@ function BenchmarkingReport({ benchmarking }) {
 
   if (!benchmarking) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 48,
-          color: '#9ca3af',
-          fontSize: 14,
-        }}
-      >
-        No benchmarking data available.
+      <div className="alert-info" style={{ textAlign: 'center', padding: '3rem' }}>
+        <p>No benchmarking data available.</p>
       </div>
     );
   }
@@ -128,34 +119,19 @@ function BenchmarkingReport({ benchmarking }) {
   const maturityLevel = assessments?.maturity?.level ?? 1;
   const maturityColor = MATURITY_COLORS[maturityLevel] || MATURITY_COLORS[1];
 
-  /* ── Shared styles ── */
-  const cardStyle = {
-    backgroundColor: '#ffffff',
-    border: '1px solid #e5e7eb',
-    borderRadius: 10,
-    padding: 24,
-    marginBottom: 20,
-  };
 
-  const sectionTitle = {
-    fontSize: 14,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: '#6b7280',
-    marginBottom: 16,
-  };
 
   return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
+    <div>
       {/* ════════════════════════ HEADER ════════════════════════ */}
       <div
+        className="feature-card"
         style={{
-          ...cardStyle,
           display: 'flex',
           alignItems: 'center',
           gap: 28,
           flexWrap: 'wrap',
+          marginBottom: 20,
         }}
       >
         {/* Maturity Badge */}
@@ -254,90 +230,35 @@ function BenchmarkingReport({ benchmarking }) {
 
       {/* ════════════════════════ BENCHMARK TABLE ════════════════════════ */}
       {metrics.length > 0 && (
-        <div style={cardStyle}>
-          <div style={sectionTitle}>Benchmark Metrics</div>
+        <div className="feature-card" style={{ marginBottom: 20 }}>
+          <div className="form-label" style={{ marginBottom: 16 }}>Benchmark Metrics</div>
           <div style={{ overflowX: 'auto' }}>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontSize: 14,
-              }}
-            >
+            <table className="data-table">
               <thead>
                 <tr>
                   {['Metric', 'Value', 'Status', 'Deviation', 'Recommendation'].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: 'left',
-                        padding: '10px 14px',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: '#9ca3af',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderBottom: '2px solid #f3f4f6',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
+                    <th key={h} style={{ whiteSpace: 'nowrap' }}>
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {metrics.map((m, idx) => (
-                  <tr
-                    key={m.key}
-                    style={{
-                      backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafbfc',
-                      transition: 'background-color 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f0f4ff';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        idx % 2 === 0 ? '#ffffff' : '#fafbfc';
-                    }}
-                  >
-                    <td
-                      style={{
-                        padding: '12px 14px',
-                        fontWeight: 600,
-                        color: '#111827',
-                        borderBottom: '1px solid #f3f4f6',
-                      }}
-                    >
+                {metrics.map((m) => (
+                  <tr key={m.key}>
+                    <td style={{ fontWeight: 600, color: '#111827' }}>
                       {m.label}
                     </td>
-                    <td
-                      style={{
-                        padding: '12px 14px',
-                        fontVariantNumeric: 'tabular-nums',
-                        color: '#374151',
-                        borderBottom: '1px solid #f3f4f6',
-                      }}
-                    >
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {m.value}
                     </td>
-                    <td style={{ padding: '12px 14px', borderBottom: '1px solid #f3f4f6' }}>
+                    <td>
                       <StatusBadge status={m.benchmark} />
                     </td>
-                    <td style={{ padding: '12px 14px', borderBottom: '1px solid #f3f4f6' }}>
+                    <td>
                       <DeviationCell deviation={m.deviation} />
                     </td>
-                    <td
-                      className="text-muted"
-                      style={{
-                        padding: '12px 14px',
-                        color: '#6b7280',
-                        fontSize: 13,
-                        borderBottom: '1px solid #f3f4f6',
-                        maxWidth: 280,
-                      }}
-                    >
+                    <td style={{ maxWidth: 280 }}>
                       {m.recommendation}
                     </td>
                   </tr>
@@ -350,8 +271,8 @@ function BenchmarkingReport({ benchmarking }) {
 
       {/* ════════════════════════ RECOMMENDATIONS ════════════════════════ */}
       {recommendations && recommendations.length > 0 && (
-        <div style={cardStyle}>
-          <div style={sectionTitle}>Recommendations</div>
+        <div className="feature-card" style={{ marginBottom: 20 }}>
+          <div className="form-label" style={{ marginBottom: 16 }}>Recommendations</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {recommendations.map((rec, idx) => {
               const prioColors = PRIORITY_COLORS[rec.priority] || PRIORITY_COLORS.Medium;

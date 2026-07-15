@@ -13,3 +13,4 @@ docs/
 .agents/
 snapshots/
 PENDING_TODOS.txt
+ai_cache.json

@@ -11,7 +11,7 @@ function inlineFormat(text) {
     if (match.index > lastIndex) parts.push(text.slice(lastIndex, match.index));
     const token = match[0];
     if (token.startsWith("`")) {
-      parts.push(<code key={parts.length} style={inlineCodeStyle}>{token.slice(1, -1)}</code>);
+      parts.push(<code key={parts.length}>{token.slice(1, -1)}</code>);
     } else if (token.startsWith("**")) {
       parts.push(<strong key={parts.length}>{token.slice(2, -2)}</strong>);
     } else if (token.startsWith("*")) {
@@ -36,29 +36,29 @@ function renderMarkdown(md) {
       while (i < lines.length && !lines[i].trim().startsWith("```")) { codeLines.push(lines[i]); i++; }
       i++;
       elements.push(
-        <pre key={elements.length} style={codeBlockStyle}>
+        <pre key={elements.length}>
           <code>{codeLines.join("\n")}</code>
         </pre>
       );
       continue;
     }
-    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length} style={{ margin: "0.75rem 0 0.25rem", fontSize: "0.875rem", fontWeight: 600, color: "#1f2937" }}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
-    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length} style={{ margin: "0.75rem 0 0.25rem", fontSize: "0.9375rem", fontWeight: 600, color: "#1f2937" }}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
-    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length} style={{ margin: "0.75rem 0 0.25rem", fontSize: "1rem", fontWeight: 700, color: "#1f2937" }}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
+    if (line.startsWith("### ")) { elements.push(<h4 key={elements.length}>{inlineFormat(line.slice(4))}</h4>); i++; continue; }
+    if (line.startsWith("## ")) { elements.push(<h3 key={elements.length}>{inlineFormat(line.slice(3))}</h3>); i++; continue; }
+    if (line.startsWith("# ")) { elements.push(<h2 key={elements.length}>{inlineFormat(line.slice(2))}</h2>); i++; continue; }
     if (/^\d+\.\s/.test(line.trim())) {
       const items = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) { items.push(lines[i].trim().replace(/^\d+\.\s/, "")); i++; }
-      elements.push(<ol key={elements.length} style={listStyle}>{items.map((item, idx) => <li key={idx} style={listItemStyle}>{inlineFormat(item)}</li>)}</ol>);
+      elements.push(<ol key={elements.length}>{items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}</ol>);
       continue;
     }
     if (/^[\-\*]\s/.test(line.trim())) {
       const items = [];
       while (i < lines.length && /^[\-\*]\s/.test(lines[i].trim())) { items.push(lines[i].trim().slice(2)); i++; }
-      elements.push(<ul key={elements.length} style={listStyle}>{items.map((item, idx) => <li key={idx} style={listItemStyle}>{inlineFormat(item)}</li>)}</ul>);
+      elements.push(<ul key={elements.length}>{items.map((item, idx) => <li key={idx}>{inlineFormat(item)}</li>)}</ul>);
       continue;
     }
     if (line.trim() === "") { i++; continue; }
-    elements.push(<p key={elements.length} style={{ margin: "0.25rem 0", fontSize: "0.8125rem", lineHeight: 1.65, color: "#374151" }}>{inlineFormat(line)}</p>);
+    elements.push(<p key={elements.length}>{inlineFormat(line)}</p>);
     i++;
   }
   return elements;
@@ -152,12 +152,12 @@ export default function RepositoryChat({ projectMetadata, stats, metrics, graph,
   // ── AI not configured ──────────────────────────────────────────────────
   if (aiConfigured === false) {
     return (
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Codebase Q&A</h3>
-        <div style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a", borderRadius: "6px", padding: "1rem 1.25rem", marginTop: "1rem" }}>
+      <div className="feature-card">
+        <h3 className="feature-card-title">Codebase Q&A</h3>
+        <div className="alert-warning" style={{ marginTop: "1rem" }}>
           <p style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "#92400e" }}>Gemini API Key Required</p>
           <p style={{ margin: "0.5rem 0 0", fontSize: "0.8125rem", color: "#78350f", lineHeight: 1.6 }}>
-            Add your API key to <code style={{ backgroundColor: "#fef3c7", padding: "0.125rem 0.25rem", borderRadius: "3px" }}>backend/.env</code> and restart the server.
+            Add your API key to <code>backend/.env</code> and restart the server.
           </p>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function RepositoryChat({ projectMetadata, stats, metrics, graph,
           <p style={{ margin: "0.125rem 0 0", fontSize: "0.75rem", color: "#9ca3af" }}>Ask questions about the repository structure, dependencies, and architecture.</p>
         </div>
         {messages.length > 0 && (
-          <button onClick={handleClear} style={clearBtnStyle}>
+          <button onClick={handleClear} className="btn-secondary" style={{ padding: "0.325rem 0.75rem", fontSize: "0.75rem" }}>
             Clear Chat
           </button>
         )}
@@ -215,7 +215,7 @@ export default function RepositoryChat({ projectMetadata, stats, metrics, graph,
             <div style={msg.role === "user" ? userBubbleStyle : modelBubbleStyle}>
               {msg.role === "user"
                 ? <p style={{ margin: 0, fontSize: "0.8125rem", lineHeight: 1.6 }}>{msg.parts[0].text}</p>
-                : <div>{renderMarkdown(msg.parts[0].text)}</div>
+                : <div className="md-render">{renderMarkdown(msg.parts[0].text)}</div>
               }
             </div>
           </div>
@@ -242,22 +242,16 @@ export default function RepositoryChat({ projectMetadata, stats, metrics, graph,
           onChange={e => setInput(e.target.value)}
           placeholder="Ask a question about the codebase…"
           disabled={loading || aiConfigured === null}
-          style={inputStyle}
+          className="form-control"
+          style={{ flex: 1 }}
         />
         <button
           type="submit"
           disabled={loading || !input.trim()}
+          className="btn-primary"
           style={{
-            backgroundColor: loading || !input.trim() ? "#d1d5db" : "#232322",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            padding: "0.5rem 1.25rem",
-            fontSize: "0.8125rem",
-            fontWeight: 600,
-            cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-            transition: "background-color 0.15s ease",
-            flexShrink: 0
+            flexShrink: 0,
+            ...(loading || !input.trim() ? { backgroundColor: "#d1d5db", cursor: "not-allowed" } : {})
           }}
         >
           Send
@@ -283,8 +277,6 @@ function TypingDots() {
 }
 
 // ── Styles ─────────────────────────────────────────────────────────────────
-const cardStyle = { backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "1.5rem" };
-const titleStyle = { margin: "0 0 0.5rem", fontSize: "1.125rem", fontWeight: 600, color: "#37352F" };
 
 const userBubbleStyle = {
   backgroundColor: "#232322",
@@ -316,48 +308,5 @@ const suggestionChipStyle = {
   textAlign: "left"
 };
 
-const clearBtnStyle = {
-  background: "none",
-  border: "1px solid #d1d5db",
-  borderRadius: "6px",
-  padding: "0.325rem 0.75rem",
-  fontSize: "0.75rem",
-  color: "#6b7280",
-  cursor: "pointer",
-  transition: "all 0.15s ease"
-};
 
-const inputStyle = {
-  flex: 1,
-  padding: "0.5rem 0.875rem",
-  borderRadius: "6px",
-  border: "1px solid #d1d5db",
-  fontSize: "0.875rem",
-  color: "#37352F",
-  outline: "none",
-  backgroundColor: "#fff",
-  transition: "border-color 0.15s ease"
-};
 
-const inlineCodeStyle = {
-  backgroundColor: "#e5e7eb",
-  padding: "0.1rem 0.35rem",
-  borderRadius: "3px",
-  fontSize: "0.75rem",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-};
-
-const codeBlockStyle = {
-  backgroundColor: "#1f2937",
-  color: "#e5e7eb",
-  border: "none",
-  borderRadius: "6px",
-  padding: "0.75rem 1rem",
-  fontSize: "0.75rem",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-  overflowX: "auto",
-  margin: "0.5rem 0"
-};
-
-const listStyle = { margin: "0.25rem 0", paddingLeft: "1.25rem", lineHeight: 1.6 };
-const listItemStyle = { fontSize: "0.8125rem", color: "#374151", marginBottom: "0.125rem" };

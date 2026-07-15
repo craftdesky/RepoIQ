@@ -8,9 +8,9 @@ const getScoreColor = (score) => {
 };
 
 const getBarColor = (score) => {
-  if (score <= 20) return '#10b981';
-  if (score <= 50) return '#f59e0b';
-  return '#ef4444';
+  if (score <= 20) return '#d1d5db';
+  if (score <= 50) return '#6b7280';
+  return '#111827';
 };
 
 const getRiskBadgeStyle = (category) => {
@@ -37,10 +37,10 @@ const getRiskBadgeStyle = (category) => {
 
 const getPriorityBadgeStyle = (priority) => {
   const map = {
-    Critical: { bg: '#fef2f2', text: '#991b1b', border: '#fecaca' },
-    High: { bg: '#fff7ed', text: '#9a3412', border: '#fed7aa' },
-    Medium: { bg: '#fffbeb', text: '#92400e', border: '#fde68a' },
-    Low: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
+    Critical: { bg: '#111827', text: '#ffffff', border: '#030712' },
+    High: { bg: '#4b5563', text: '#ffffff', border: '#374151' },
+    Medium: { bg: '#e5e7eb', text: '#1f2937', border: '#9ca3af' },
+    Low: { bg: '#f9fafb', text: '#374151', border: '#d1d5db' },
   };
   const c = map[priority] || map['Medium'];
   return {
@@ -64,21 +64,6 @@ const CATEGORY_LABELS = {
   maintainability: 'Maintainability',
 };
 
-const cardStyle = {
-  backgroundColor: '#ffffff',
-  border: '1px solid #e5e7eb',
-  borderRadius: '10px',
-  padding: '20px',
-};
-
-const sectionTitleStyle = {
-  fontSize: '14px',
-  fontWeight: 700,
-  color: '#111827',
-  marginBottom: '16px',
-  letterSpacing: '0.01em',
-};
-
 export default function TechnicalDebtReport({ technicalDebt }) {
   const sortedHotspots = useMemo(() => {
     if (!technicalDebt?.debtHotspots) return [];
@@ -96,7 +81,7 @@ export default function TechnicalDebtReport({ technicalDebt }) {
 
   if (!technicalDebt) {
     return (
-      <div style={{ ...cardStyle, textAlign: 'center', padding: '48px 20px' }}>
+      <div className="feature-card" style={{ textAlign: 'center', padding: '48px 20px' }}>
         <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.45 }}>📊</div>
         <div style={{ fontSize: '15px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
           No Technical Debt Data
@@ -112,16 +97,16 @@ export default function TechnicalDebtReport({ technicalDebt }) {
   const scoreColor = getScoreColor(summary.technicalDebtScore);
 
   const riskCards = [
-    { label: 'Low', count: riskDistribution.low, color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0' },
-    { label: 'Medium', count: riskDistribution.medium, color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
-    { label: 'High', count: riskDistribution.high, color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
-    { label: 'Critical', count: riskDistribution.critical, color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
+    { label: 'Low', count: riskDistribution.low, color: '#374151', bg: '#f9fafb', border: '#d1d5db' },
+    { label: 'Medium', count: riskDistribution.medium, color: '#1f2937', bg: '#e5e7eb', border: '#9ca3af' },
+    { label: 'High', count: riskDistribution.high, color: '#ffffff', bg: '#4b5563', border: '#374151' },
+    { label: 'Critical', count: riskDistribution.critical, color: '#ffffff', bg: '#111827', border: '#030712' },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Score Hero */}
-      <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+      <div className="feature-card" style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
         <div
           style={{
             width: '80px',
@@ -141,7 +126,7 @@ export default function TechnicalDebtReport({ technicalDebt }) {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#111827' }}>
+            <span className="feature-card-title" style={{ margin: 0 }}>
               Technical Debt Score
             </span>
             <span style={getRiskBadgeStyle(summary.riskCategory)}>{summary.riskCategory}</span>
@@ -153,10 +138,10 @@ export default function TechnicalDebtReport({ technicalDebt }) {
       </div>
 
       {/* Breakdown + Risk Distribution row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="stat-grid stat-grid-2">
         {/* Breakdown */}
-        <div style={cardStyle}>
-          <div style={sectionTitleStyle}>Debt Breakdown</div>
+        <div className="feature-card">
+          <div className="form-label" style={{ marginBottom: '16px' }}>Debt Breakdown</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {Object.entries(breakdown).map(([key, { score, weight }]) => {
               const barColor = getBarColor(score);
@@ -206,24 +191,22 @@ export default function TechnicalDebtReport({ technicalDebt }) {
         </div>
 
         {/* Risk Distribution */}
-        <div style={cardStyle}>
-          <div style={sectionTitleStyle}>Risk Distribution</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div className="feature-card">
+          <div className="form-label" style={{ marginBottom: '16px' }}>Risk Distribution</div>
+          <div className="stat-grid stat-grid-2" style={{ gap: '10px' }}>
             {riskCards.map((r) => (
               <div
                 key={r.label}
+                className="stat-box"
                 style={{
                   backgroundColor: r.bg,
                   border: `1px solid ${r.border}`,
-                  borderRadius: '8px',
-                  padding: '14px',
-                  textAlign: 'center',
                 }}
               >
-                <div style={{ fontSize: '26px', fontWeight: 800, color: r.color, lineHeight: 1.1 }}>
+                <div className="stat-box-value" style={{ fontSize: '26px', fontWeight: 800, color: r.color, lineHeight: 1.1 }}>
                   {r.count}
                 </div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: r.color, marginTop: '4px' }}>
+                <div className="stat-box-label" style={{ fontWeight: 600, color: r.color }}>
                   {r.label}
                 </div>
               </div>
@@ -233,64 +216,22 @@ export default function TechnicalDebtReport({ technicalDebt }) {
       </div>
 
       {/* Hotspots Table */}
-      <div style={cardStyle}>
-        <div style={sectionTitleStyle}>Debt Hotspots</div>
+      <div className="feature-card">
+        <div className="form-label" style={{ marginBottom: '16px' }}>Debt Hotspots</div>
         <div
           style={{
             maxHeight: '350px',
             overflowY: 'auto',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-lg)',
           }}
         >
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <table className="data-table">
             <thead>
-              <tr
-                style={{
-                  backgroundColor: '#f9fafb',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 1,
-                }}
-              >
-                <th
-                  style={{
-                    textAlign: 'left',
-                    padding: '10px 14px',
-                    fontWeight: 700,
-                    color: '#374151',
-                    borderBottom: '1px solid #e5e7eb',
-                    fontSize: '12px',
-                  }}
-                >
-                  File
-                </th>
-                <th
-                  style={{
-                    textAlign: 'center',
-                    padding: '10px 14px',
-                    fontWeight: 700,
-                    color: '#374151',
-                    borderBottom: '1px solid #e5e7eb',
-                    fontSize: '12px',
-                    width: '110px',
-                  }}
-                >
-                  Debt Score
-                </th>
-                <th
-                  style={{
-                    textAlign: 'center',
-                    padding: '10px 14px',
-                    fontWeight: 700,
-                    color: '#374151',
-                    borderBottom: '1px solid #e5e7eb',
-                    fontSize: '12px',
-                    width: '110px',
-                  }}
-                >
-                  Priority
-                </th>
+              <tr style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+                <th>File</th>
+                <th style={{ textAlign: 'center', width: '110px' }}>Debt Score</th>
+                <th style={{ textAlign: 'center', width: '110px' }}>Priority</th>
               </tr>
             </thead>
             <tbody>
@@ -298,7 +239,8 @@ export default function TechnicalDebtReport({ technicalDebt }) {
                 <tr>
                   <td
                     colSpan={3}
-                    style={{ textAlign: 'center', padding: '24px', color: '#9ca3af', fontSize: '13px' }}
+                    className="text-muted"
+                    style={{ textAlign: 'center', padding: '24px' }}
                   >
                     No hotspots detected.
                   </td>
@@ -308,22 +250,10 @@ export default function TechnicalDebtReport({ technicalDebt }) {
                   const priority = refCandidateMap[h.file] || (h.debtScore > 60 ? 'Critical' : h.debtScore > 40 ? 'High' : 'Medium');
                   const sc = getScoreColor(h.debtScore);
                   return (
-                    <tr
-                      key={`${h.file}-${i}`}
-                      style={{
-                        borderBottom: '1px solid #f3f4f6',
-                        transition: 'background-color 0.2s ease',
-                        cursor: 'default',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9fafb')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
+                    <tr key={`${h.file}-${i}`}>
                       <td
+                        className="mono"
                         style={{
-                          padding: '10px 14px',
-                          fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
-                          fontSize: '12px',
-                          color: '#1f2937',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -333,12 +263,12 @@ export default function TechnicalDebtReport({ technicalDebt }) {
                       >
                         {h.file}
                       </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }}>
                         <span style={{ fontWeight: 700, color: sc.text, fontSize: '13px' }}>
                           {h.debtScore}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }}>
                         <span style={getPriorityBadgeStyle(priority)}>{priority}</span>
                       </td>
                     </tr>
