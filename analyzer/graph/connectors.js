@@ -16,7 +16,7 @@ function buildAdjacency(graph) {
         const b = normalizeId(e.to || "");
         if (!adj.has(a)) adj.set(a, new Set());
         if (!adj.has(b)) adj.set(b, new Set());
-        // undirected
+
         adj.get(a).add(b);
         adj.get(b).add(a);
     }
@@ -24,7 +24,7 @@ function buildAdjacency(graph) {
     return adj;
 }
 
-// Connected components (excluding optional node)
+// Connected components
 function connectedComponents(adj, exclude = null) {
     const seen = new Set();
     const comps = [];

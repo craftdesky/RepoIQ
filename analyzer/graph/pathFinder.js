@@ -110,21 +110,3 @@ module.exports = {
     findAllPaths,
     findDependencyPaths
 };
-
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2];
-    const startId = process.argv[3];
-    const targetId = process.argv[4];
-
-    if (!repoPath || !startId || !targetId) {
-        console.error("Usage: node analyzer/graph/pathFinder.js <repo-path> <from-file> <to-file>");
-        process.exit(1);
-    }
-
-    const graph = buildGraph(repoPath);
-    const result = findDependencyPaths(graph, normalizeId(startId), normalizeId(targetId));
-
-    console.log(JSON.stringify(result, null, 2));
-}

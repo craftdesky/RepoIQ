@@ -1,5 +1,5 @@
 function getNodes(graph) {
-    /// returns an array for further use even if u pass a graph object or simple json as input
+    // returns an array for further use even if u pass a graph object or simple json as input
     // can encounter json when i save to DB and then load data from DB 
     if (graph && typeof graph.getNodes === "function") {
         return graph.getNodes();

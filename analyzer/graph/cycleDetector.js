@@ -41,14 +41,14 @@ function detectCycles(graph) {
     }
 
     const visited = new Set();
-    const inStack = new Set();
+    const dfsStack = new Set();
     const stack = [];
     const cycleKeys = new Set();
     const cycles = [];
 
     function visit(nodeId) {
         visited.add(nodeId);
-        inStack.add(nodeId);
+        dfsStack.add(nodeId);
         stack.push(nodeId);
 
         const dependencies = adjacencyList.get(nodeId) || [];
@@ -63,7 +63,7 @@ function detectCycles(graph) {
                 continue;
             }
 
-            if (inStack.has(dependencyId)) {
+            if (dfsStack.has(dependencyId)) {
                 const startIndex = stack.indexOf(dependencyId);
                 const cyclePath = [...stack.slice(startIndex), dependencyId];
                 const cycleKey = getCycleKey(cyclePath);
@@ -84,7 +84,7 @@ function detectCycles(graph) {
         }
 
         stack.pop();
-        inStack.delete(nodeId);
+        dfsStack.delete(nodeId);
     }
 
     for (const node of nodes) {
@@ -101,16 +101,3 @@ module.exports = {
     normalizeCycle,
     getSeverity
 };
-
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    const graph = buildGraph(repoPath);
-    const cycles = detectCycles(graph);
-
-    console.log(JSON.stringify({
-        cycleCount: cycles.length,
-        cycles
-    }, null, 2));
-}

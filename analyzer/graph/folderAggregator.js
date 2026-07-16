@@ -11,7 +11,6 @@ function aggregateFolderGraph(graphJson) {
     const nodes = graphJson.nodes || [];
     const edges = graphJson.edges || [];
 
-    // Step 1: Group files by parent directory
     const folderMap = {};
     for (const node of nodes) {
         const dir = getDir(node.id);
@@ -31,7 +30,6 @@ function aggregateFolderGraph(graphJson) {
         folderMap[dir].totalLines += node.lineCount || 0;
     }
 
-    // Step 2-5: Scan file-to-file edges, resolve to folders, build folder edges
     const folderEdgeMap = {};
 
     for (const edge of edges) {
@@ -43,7 +41,8 @@ function aggregateFolderGraph(graphJson) {
             if (folderMap[fromDir]) {
                 folderMap[fromDir].internalLinks += 1;
             }
-        } else {
+        }
+        else {
             // External link: folder-to-folder dependency
             if (folderMap[fromDir]) folderMap[fromDir].externalOutgoing += 1;
             if (folderMap[toDir]) folderMap[toDir].externalIncoming += 1;
@@ -62,7 +61,6 @@ function aggregateFolderGraph(graphJson) {
         }
     }
 
-    // Step 6-7: Compile and return
     const folderNodes = Object.values(folderMap).map(f => ({
         id: f.id,
         fileCount: f.fileCount,

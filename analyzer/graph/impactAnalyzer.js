@@ -56,7 +56,8 @@ function analyzeImpact(graph, changedFileId, options = {}) {
         if (!affected.has(current.id)) {
             affected.add(current.id);
             nodeDepths.set(current.id, currentDepth);
-        } else {
+        }
+        else {
             if (currentDepth < nodeDepths.get(current.id)) {
                 nodeDepths.set(current.id, currentDepth);
             }
@@ -115,20 +116,3 @@ module.exports = {
     buildReverseAdjacencyList,
     getImpactScope
 };
-
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2];
-    const changedFileId = process.argv[3];
-
-    if (!repoPath || !changedFileId) {
-        console.error("Usage: node analyzer/graph/impactAnalyzer.js <repo-path> <changed-file>");
-        process.exit(1);
-    }
-
-    const graph = buildGraph(repoPath);
-    const impact = analyzeImpact(graph, changedFileId);
-
-    console.log(JSON.stringify(impact, null, 2));
-}

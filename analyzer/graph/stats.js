@@ -76,7 +76,7 @@ function calculateGraphStats(graph, options = {}) {
     const limit = options.limit || 10;
     const nodeCount = nodes.length;
     const edgeCount = edges.length;
-    // compute total folders and total lines
+    
     const folderSet = new Set();
     let totalLines = 0;
 
@@ -84,7 +84,8 @@ function calculateGraphStats(graph, options = {}) {
         try {
             const dir = path.posix.dirname(node.id || "");
             folderSet.add(dir === "" ? "." : dir);
-        } catch (e) {
+        }
+        catch (e) {
             // ignore
         }
 
@@ -140,12 +141,3 @@ module.exports = {
     getDensity
 };
 
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    const graph = buildGraph(repoPath);
-    const stats = calculateGraphStats(graph);
-
-    console.log(JSON.stringify(stats, null, 2));
-}

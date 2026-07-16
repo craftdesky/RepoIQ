@@ -187,11 +187,3 @@ module.exports = {
     buildGraph,
     collectDependencyEntries
 };
-
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    const graph = buildGraph(repoPath);
-    console.log(JSON.stringify(graph.toJSON(), null, 2));
-}
