@@ -1,7 +1,5 @@
 /**
- * Technical Debt Calculator
- * 
- * Identifies code structures that increase maintenance costs by evaluating:
+ * Identify code structures that increase maintenance costs by evaluating:
  * - Complexity Debt (high CC files)
  * - Coupling Debt (tight inter-module dependencies)
  * - Cycle Debt (circular dependencies)
@@ -23,12 +21,12 @@ function calculateComplexityDebt(metrics, graph) {
             else if (cc > 10) debtPoints += 10;      // Moderate complexity
         }
 
-        // Normalize to [0, 100]
         const totalFiles = graph?.nodes?.length || files.length || 1;
         const normalized = Math.min(100, (debtPoints / totalFiles) * 5);
         
         return Math.round(normalized);
-    } catch (error) {
+    }
+    catch (error) {
         console.error("[technical-debt] Error calculating complexity debt:", error);
         return 0;
     }
@@ -38,16 +36,16 @@ function calculateCouplingDebt(metrics) {
     try {
         const couplingDensity = metrics?.couplingDensity?.density || 0;
         
-        // Convert to [0, 100]
         let debtScore = couplingDensity * 100;
         
-        // Add severity multiplier for high coupling
+        // Severity multiplier for high coupling
         if (couplingDensity > 0.75) {
             debtScore = Math.min(100, debtScore * 1.25);
         }
         
         return Math.round(debtScore);
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("[technical-debt] Error calculating coupling debt:", error);
         return 0;
     }
@@ -61,7 +59,8 @@ function calculateCycleDebt(cycles) {
         const debtScore = Math.min(100, cycleCount * 15);
         
         return Math.round(debtScore);
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("[technical-debt] Error calculating cycle debt:", error);
         return 0;
     }
@@ -132,7 +131,8 @@ function calculatePerFileDebt(file, metrics, graph, cycles) {
                          (docFactor * 0.10);
 
         return Math.round(fileDebt * 100);
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("[technical-debt] Error calculating per-file debt:", error);
         return 0;
     }
@@ -140,14 +140,12 @@ function calculatePerFileDebt(file, metrics, graph, cycles) {
 
 function calculateTechnicalDebt(metrics, graph, cycles) {
     try {
-        // Calculate component debts
         const complexityDebt = calculateComplexityDebt(metrics, graph);
         const couplingDebt = calculateCouplingDebt(metrics);
         const cycleDebt = calculateCycleDebt(cycles);
         const documentationDebt = calculateDocumentationDebt(metrics);
         const maintainabilityDebt = calculateMaintainabilityDebt(metrics);
 
-        // Weighted combination
         const weights = {
             complexity: 0.30,
             coupling: 0.25,
@@ -215,7 +213,8 @@ function calculateTechnicalDebt(metrics, graph, cycles) {
                 priority: f.debtScore > 80 ? "Critical" : f.debtScore > 60 ? "High" : "Medium"
             }))
         };
-    } catch (error) {
+    } 
+    catch (error) {
         console.error("[technical-debt] Error calculating technical debt:", error);
         return {
             summary: {

@@ -1,7 +1,5 @@
 /**
- * Code Quality Score Calculator
- * 
- * Generates an aggregate quality score based on five dimensions:
+ * Quality score based on five dimensions:
  * - Complexity (lower is better)
  * - Coupling (lower is better)
  * - Documentation (higher is better)
@@ -10,12 +8,10 @@
  */
 
 function normalizeScore(value, min, max, inverse = false) {
-    // Clamp value between min and max
     const clamped = Math.max(min, Math.min(max, value));
     let normalized = (clamped - min) / (max - min);
     
-    // Invert if lower is better (e.g., complexity)
-    if (inverse) normalized = 1 - normalized;
+    if (inverse) normalized = 1 - normalized;  // Invert if lower is better
     
     return Math.round(normalized * 100);
 }
@@ -70,11 +66,11 @@ function calculateMetricsVariance(metrics) {
         const stdDev = Math.sqrt(variance);
         const coeffVar = (stdDev / (mean || 1)) * 100;
 
-        // Normalize coefficient of variation to [0, 100]
-        // High variance (>100%) gets low score
+        // Normalize coefficient of variation to [0, 100], high variance (>100%) gets low score
         const normalized = Math.max(0, 100 - Math.min(coeffVar, 100));
         return Math.round(normalized);
-    } catch (error) {
+    }
+    catch (error) {
         console.error("[code-quality] Error calculating variance:", error);
         return 50;
     }
@@ -82,7 +78,6 @@ function calculateMetricsVariance(metrics) {
 
 function calculateCodeQualityScore(metrics, graph, cycles) {
     try {
-        // Extract metrics with safe defaults
         const avgCC = metrics?.cyclomaticComplexity?.summary?.averageComplexity || 5;
         const couplingDensity = metrics?.couplingDensity?.density || 0.5;
         const commentDensity = metrics?.commentDensity?.summary?.averageCommentDensity || 0.1;
@@ -141,7 +136,8 @@ function calculateCodeQualityScore(metrics, graph, cycles) {
             strengths: identifyStrengths(breakdown),
             weaknesses: identifyWeaknesses(breakdown)
         };
-    } catch (error) {
+    }
+    catch (error) {
         console.error("[code-quality] Error calculating code quality:", error);
         return {
             summary: {

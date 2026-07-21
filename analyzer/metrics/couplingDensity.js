@@ -43,12 +43,3 @@ function calculateCouplingDensity(graph, options = {}) {
 module.exports = {
     calculateCouplingDensity
 };
-
-
-// printing for testing
-if (require.main === module) {
-    const { buildGraph } = require("../graph/graphBuilder");
-    const repoPath = process.argv[2] || ".";
-    const graph = buildGraph(repoPath);
-    console.log(JSON.stringify(calculateCouplingDensity(graph), null, 2));
-}

@@ -1,8 +1,5 @@
 /**
- * Maintainability Index Calculator
- * 
- * Refer Microsoft's Maintainability Index formula to calculate a score (0-100)
- * representing the long-term maintainability of code.
+ * Using Microsoft's Maintainability Index formula to calculate a score (0-100) representing long term maintinability of code
  * 
  * Formula:
  * MI = 171 - 5.2 * ln(HalsteadVolume)
@@ -12,20 +9,13 @@
  */
 
 function calculateMaintainabilityIndex(halsteadVolume, cyclomaticComplexity, linesOfCode, commentDensity) {
-    // Handle edge cases - clamp to safe minimum values
     const volume = Math.max(1, halsteadVolume || 0);
     const loc = Math.max(1, linesOfCode || 0);
     const cc = Math.max(1, cyclomaticComplexity || 1);
     const cd = Math.max(0, Math.min(1, commentDensity || 0));
     
-    // Apply Maintainability Index formula
-    const mi = 171
-        - (5.2 * Math.log(volume))
-        - (0.23 * cc)
-        - (16.2 * Math.log(loc))
-        + (50 * Math.sqrt(2.46 * cd));
+    const mi = 171 - (5.2 * Math.log(volume)) - (0.23 * cc) - (16.2 * Math.log(loc)) + (50 * Math.sqrt(2.46 * cd));
     
-    // Clamp to [0, 100]
     return Math.max(0, Math.min(100, mi));
 }
 
@@ -38,7 +28,6 @@ function getMaintainabilityCategory(score) {
 
 function calculateRepoMaintainability(repoPath, metrics, graphData) {
     try {
-        // Ensure we have metrics to work with
         if (!metrics || !metrics.halstead || !metrics.cyclomaticComplexity) {
             return {
                 summary: {
@@ -59,7 +48,7 @@ function calculateRepoMaintainability(repoPath, metrics, graphData) {
         const files = graphData?.nodes || [];
         const fileScores = [];
 
-        // Calculate MI for each file
+        // MI for each file
         for (const file of files) {
             const halsteadFile = metrics.halstead.files?.find(f => f.file === file.id);
             const ccFile = metrics.cyclomaticComplexity.files?.find(f => f.file === file.id);
@@ -86,7 +75,7 @@ function calculateRepoMaintainability(repoPath, metrics, graphData) {
             });
         }
 
-        // Calculate repository average and distribution
+        // Repository average and distribution
         if (fileScores.length === 0) {
             return {
                 summary: {
@@ -127,7 +116,8 @@ function calculateRepoMaintainability(repoPath, metrics, graphData) {
             },
             files: sortedFiles
         };
-    } catch (error) {
+    }
+    catch (error) {
         console.error("[maintainability] Error calculating maintainability:", error);
         return {
             summary: {

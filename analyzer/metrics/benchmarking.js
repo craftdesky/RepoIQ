@@ -1,9 +1,4 @@
-/**
- * Repository Benchmarking Calculator
- * 
- * Compares repository metrics against industry-standard thresholds and
- * provides deviation analysis and maturity assessment.
- */
+// Compares repository metrics against industry-standard thresholds and provides deviation analysis and maturity assessment.
 
 const INDUSTRY_BENCHMARKS = {
     cyclomaticComplexity: {
@@ -117,7 +112,7 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
             metrics: {}
         };
 
-        // 1. Cyclomatic Complexity Benchmark
+        // Cyclomatic Complexity Benchmark
         const avgCC = allMetrics?.cyclomaticComplexity?.summary?.averageComplexity || 0;
         const ccBench = compareToBenchmark(avgCC, INDUSTRY_BENCHMARKS.cyclomaticComplexity);
         report.metrics.cyclomaticComplexity = {
@@ -129,7 +124,7 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
                 : "Focus on reducing function complexity through refactoring"
         };
 
-        // 2. Coupling Density Benchmark
+        // Coupling Density Benchmark
         const coupling = allMetrics?.couplingDensity?.density || 0;
         const couplingBench = compareToBenchmark(coupling, INDUSTRY_BENCHMARKS.couplingDensity);
         report.metrics.couplingDensity = {
@@ -141,7 +136,7 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
                 : "Refactor to reduce module interdependencies"
         };
 
-        // 3. Comment Density Benchmark
+        // Comment Density Benchmark
         const comments = allMetrics?.commentDensity?.summary?.averageCommentDensity || 0;
         const commentBench = compareToBenchmark(comments, INDUSTRY_BENCHMARKS.commentDensity);
         report.metrics.commentDensity = {
@@ -153,7 +148,7 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
                 : "Add more code comments and documentation"
         };
 
-        // 4. Cycle Count Benchmark
+        // Cycle Count Benchmark
         const cycleCount = cycles?.length || 0;
         const cycleBench = getCycleBenchmark(cycleCount);
         report.metrics.cycles = {
@@ -165,7 +160,7 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
                 : `${cycleCount} cycles found - refactor to break dependencies`
         };
 
-        // 5. Maintainability Benchmark
+        // Maintainability Benchmark
         const avgMI = allMetrics?.maintainability?.summary?.averageMaintainability || 0;
         const miBench = compareToBenchmark(avgMI, INDUSTRY_BENCHMARKS.maintainability);
         report.metrics.maintainability = {
@@ -193,11 +188,12 @@ function calculateBenchmarkReport(allMetrics, graph, cycles) {
             maturity: generateEngineeringMaturityLevel(report.summary.passedBenchmarks / report.summary.totalBenchmarks)
         };
 
-        // Generate prioritized recommendations
+        // Prioritized recommendations
         report.recommendations = generateRecommendations(report, avgCC, coupling, comments, cycleCount, avgMI);
 
         return report;
-    } catch (error) {
+    }
+    catch (error) {
         console.error("[benchmarking] Error calculating benchmark report:", error);
         return {
             timestamp: new Date().toISOString(),

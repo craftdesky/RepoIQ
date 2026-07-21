@@ -124,8 +124,3 @@ module.exports = {
     calculateRepoHalstead,
     calculateHalsteadFromCounts
 };
-
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    console.log(JSON.stringify(calculateRepoHalstead(repoPath), null, 2));
-}

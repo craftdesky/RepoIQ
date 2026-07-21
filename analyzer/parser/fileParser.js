@@ -80,15 +80,3 @@ module.exports = {
     DEFAULT_PARSER_OPTIONS
 };
 
-// printing for testing
-if (require.main === module) {
-    const target = process.argv[2];
-
-    if (!target) {
-        console.error("Wrong input!");
-        process.exit(1);
-    }
-
-    const result = parseFile(target);
-    console.log(JSON.stringify(result, null, 2));
-}

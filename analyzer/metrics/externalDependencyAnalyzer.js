@@ -71,7 +71,8 @@ function analyzeExternalDependencies(repoPath, graph) {
                 name: pkg,
                 files: Array.from(packageUsage[pkg])
             });
-        } else {
+        }
+        else {
             // Check if there are types like @types/pkg which we don't strictly import
             unused.push(pkg);
         }
@@ -85,7 +86,8 @@ function analyzeExternalDependencies(repoPath, graph) {
                     name: pkg,
                     files: Array.from(packageUsage[pkg])
                 });
-            } else {
+            }
+            else {
                 undeclared.push({
                     name: pkg,
                     files: Array.from(packageUsage[pkg])

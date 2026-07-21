@@ -139,11 +139,3 @@ module.exports = {
 	calculateFileCyclomatic,
 	calculateRepoCyclomatic
 };
-
-
-// printing for testing
-if (require.main === module) {
-	const repoPath = process.argv[2] || ".";
-	console.log(JSON.stringify(calculateRepoCyclomatic(repoPath), null, 2));
-}
-

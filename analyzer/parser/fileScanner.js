@@ -50,9 +50,3 @@ function scanSourceFiles(repoPath) {
 module.exports = {
     scanSourceFiles
 };
-
-// printing for testing
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    console.log(JSON.stringify(scanSourceFiles(repoPath), null, 2));
-}

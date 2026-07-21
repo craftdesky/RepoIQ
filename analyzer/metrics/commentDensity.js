@@ -168,11 +168,3 @@ module.exports = {
 	calculateFileCommentDensity,
 	calculateRepoCommentDensity
 };
-
-
-// printing for testing
-if (require.main === module) {
-	const repoPath = process.argv[2] || ".";
-	console.log(JSON.stringify(calculateRepoCommentDensity(repoPath), null, 2));
-}
-

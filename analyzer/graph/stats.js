@@ -85,7 +85,7 @@ function calculateGraphStats(graph, options = {}) {
             const dir = path.posix.dirname(node.id || "");
             folderSet.add(dir === "" ? "." : dir);
         }
-        catch (e) {
+        catch (error) {
             // ignore
         }
 
