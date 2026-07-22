@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 const { v4: uuidv4 } = require("uuid");
 const { analyzeRepo } = require("../analyzer/analyzeRepo");
 const { findDependencyPaths } = require("../analyzer/graph/pathFinder");
-const { isAiConfigured, generateText } = require("./services/aiService");
+const { isAiConfigured, generateText, generateJSON } = require("./services/aiService");
 const { getCache, setCache } = require("./services/cacheService");
 
 const TEMP_DIR = path.join(__dirname, "temp-clones");

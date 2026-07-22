@@ -200,7 +200,7 @@ export default function OnboardingAssistant({ projectMetadata, stats, metrics, r
       {loading && (
         <div className="loading-row">
           <Spinner />
-          <span>Generating your personalized guide with Gemini…</span>
+          <span>Generating your personalized guide…</span>
         </div>
       )}
 

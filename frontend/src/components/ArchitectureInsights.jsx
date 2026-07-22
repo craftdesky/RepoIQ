@@ -95,7 +95,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🏗️</div>
           <h4 style={{ margin: "0 0 0.5rem", fontSize: "1rem", color: "#37352F" }}>No analysis generated yet</h4>
           <p style={{ margin: "0 0 1.25rem", fontSize: "0.8125rem", color: "#6b7280", maxWidth: "480px", marginLeft: "auto", marginRight: "auto" }}>
-            Click below to let Gemini analyze your repository's file structure and classify its architecture.
+            Click below to let AI analyze your repository's file structure and classify its architecture.
           </p>
           <button onClick={handleGenerate} className="btn-primary">
             Generate Architecture Insights
@@ -112,7 +112,7 @@ export default function ArchitectureInsights({ projectMetadata, stats, graph, re
         <h3 className="feature-card-title">Architecture Insights</h3>
         <div className="loading-row" style={{ padding: "3rem 0", justifyContent: "center" }}>
           <Spinner />
-          <span style={{ fontSize: "0.875rem" }}>Analyzing repository architecture with Gemini…</span>
+          <span style={{ fontSize: "0.875rem" }}>Analyzing repository architecture…</span>
         </div>
       </div>
     );

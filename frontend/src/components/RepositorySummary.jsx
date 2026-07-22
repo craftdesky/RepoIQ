@@ -235,7 +235,7 @@ export default function RepositorySummary({ projectMetadata, stats, metrics, rep
       {loading && (
         <div className="loading-row">
           <Spinner />
-          <span>Generating repository summary with Gemini…</span>
+          <span>Generating repository summary…</span>
         </div>
       )}
 

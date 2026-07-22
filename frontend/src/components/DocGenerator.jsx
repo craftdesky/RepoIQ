@@ -213,7 +213,7 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
       {loading && (
         <div className="loading-row" style={{ padding: "3rem 0", justifyContent: "center" }}>
           <Spinner />
-          <span>Generating comprehensive Markdown documentation with Gemini…</span>
+          <span>Generating comprehensive Markdown documentation…</span>
         </div>
       )}
 
@@ -232,7 +232,7 @@ export default function DocGenerator({ projectMetadata, stats, metrics, graph, r
             No documentation generated yet for this section
           </h4>
           <p style={{ margin: "0 0 1.25rem", fontSize: "0.8125rem", color: "#6b7280", maxWidth: "480px", marginLeft: "auto", marginRight: "auto" }}>
-            Click generate below to let Gemini analyze your codebase structure and build complete technical documentation.
+            Click generate below to let AI analyze your codebase structure and build complete technical documentation.
           </p>
           <button
             onClick={() => generateDoc(activeSection)}
