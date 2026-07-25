@@ -1,6 +1,6 @@
 # RepoIQ 🧠
 
-> **Codebase intelligence for modern developers. Analyze architecture, visualize dependencies, detect cycles, and understand complex repositories—all from a single platform.**
+> **Codebase intelligence for modern developers. Analyze architecture, visualize dependencies, detect cycles, and understand complex repositories - all from a single platform.**
 
 RepoIQ transforms complex software repositories into interactive dependency graphs, actionable code quality metrics, and structured AI-driven documentation. Built with a clean, minimalist interface, RepoIQ bridges the gap between raw source code and architectural clarity for developers, tech leads, and onboarding engineers.
 
