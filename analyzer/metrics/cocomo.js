@@ -59,9 +59,3 @@ module.exports = {
     calculateCocomoFromLoc,
     calculateRepoCocomo
 };
-
-if (require.main === module) {
-    const repoPath = process.argv[2] || ".";
-    const mode = process.argv[3] || "organic";
-    console.log(JSON.stringify(calculateRepoCocomo(repoPath, { mode }), null, 2));
-}
