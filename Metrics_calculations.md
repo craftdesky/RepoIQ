@@ -28,6 +28,11 @@
 - **Formula:** `171 - 5.2*ln(V) - 0.23*CC - 16.2*ln(LOC) + 50*sqrt(2.46*CD)`
 - **Variables:** `V`=Halstead Volume, `CC`=Cyclomatic Complexity, `LOC`=Lines of Code, `CD`=Comment Density.
 - **Constraints:** `V >= 1`, `LOC >= 1`, `CC >= 1`, `0 <= CD <= 1`. Result is clamped to `[0, 100]`.
+- **Thresholds / Categories:**
+  - `MI >= 90`: Highly Maintainable (Excellent)
+  - `MI >= 70`: Moderately Maintainable (Good)
+  - `MI >= 50`: Low Maintainability (Concerning)
+  - `MI < 50`: Unmaintainable (Critical)
 
 ## 5. Hotspot Score
 - **Coupling Score:** `0.7*(Outgoing External / Outgoing Total) + 0.3*(Incoming External / Incoming Total)`
@@ -35,6 +40,11 @@
 - **Complexity Score:** `CC / Max CC`
 - **Cycle Penalty:** `min(CyclesCount * 0.10, 0.40)`
 - **Formula:** `W1*Coupling + W2*Impact + W3*Complexity + W4*Cycle Penalty` (default weights: 0.35, 0.35, 0.25, 0.05). Clamped to `[0, 1]` and mapped to `100`.
+- **Thresholds / Categories:**
+  - `Score >= 80`: Critical Risk
+  - `Score >= 60`: High Risk
+  - `Score >= 30`: Moderate Risk
+  - `Score < 30`: Low Risk
 
 ## 6. Technical Debt
 - **Complexity Debt:** Penalizes files with `CC > 10` (+10) and `CC > 15` (+20).
@@ -43,6 +53,11 @@
 - **Documentation Debt:** Capped at 40 (Critical lack if `CD < 0.05`).
 - **Maintainability Debt:** Penalizes `MI < 70` (+20) and `MI < 50` (+40).
 - **Total Debt Score:** Weighted sum `(Complexity*0.30 + Coupling*0.25 + Cycles*0.25 + Docs*0.15 + MI*0.05)`. Capped at `100`.
+- **Thresholds / Categories (Overall Risk):**
+  - `Score <= 20`: Low Risk
+  - `Score <= 40`: Medium Risk
+  - `Score <= 60`: High Risk
+  - `Score > 60`: Critical Risk
 
 ## 7. Architecture Health Score
 - **Cycles Penalty:** `min(Cycles * 0.10, 0.40)`
@@ -57,6 +72,12 @@
 - **Architecture Score:** `100 - min(100, Cycles * 10)`.
 - **Consistency Score:** `100 - min(100, Coefficient of Variance for CC %)` where Variance is `(StdDev / Mean CC) * 100`.
 - **Total Quality Score:** `(Complexity*0.25) + (Coupling*0.25) + (Docs*0.20) + (Arch*0.20) + (Consistency*0.10)`.
+- **Thresholds / Categories:**
+  - `Score >= 80`: Excellent (Grade A)
+  - `Score >= 60`: Good (Grade B)
+  - `Score >= 40`: Fair (Grade C)
+  - `Score >= 20`: Poor (Grade D)
+  - `Score < 20`: Poor (Grade F)
 
 ## 9. Coupling Density
 - **External Links:** Edges where the source file and target file are located in different directories.
